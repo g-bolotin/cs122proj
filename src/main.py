@@ -1,5 +1,5 @@
 import arcade
-import constants
+from src import constants
 from main_menu import MainMenuView
 
 def main():

@@ -1,5 +1,6 @@
 import arcade
-import constants
+from src import constants
+
 
 class Player(arcade.Sprite):
     def update(self):

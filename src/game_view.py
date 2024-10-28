@@ -1,5 +1,5 @@
 import arcade
-import constants
+from src import constants
 from player import Player
 
 MOVEMENT_SPEED = 5
@@ -19,7 +19,7 @@ class GameView(arcade.View):
 
         # Create player sprite at screen center
         self.player_sprite = Player(
-            filename="assets/33.png", # Temporary sprite
+            filename="../assets/33.png", # Temporary sprite
             # image_width=32, potential sprite width
             # image_height=32, potential sprite height
             center_x=constants.SCREEN_WIDTH / 2,
@@ -39,7 +39,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             "Lives: 5",
             10,
-            constants.SCREEN_HEIGHT- 20,
+            constants.SCREEN_HEIGHT - 20,
             arcade.color.WHITE,
             14 # font size
         )

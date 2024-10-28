@@ -1,6 +1,6 @@
 import arcade
-import constants
-from game_view import GameView
+from src import constants
+from src.game_view import GameView
 
 
 class MainMenuView(arcade.View):

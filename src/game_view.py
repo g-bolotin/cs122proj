@@ -6,7 +6,6 @@ class GameView(arcade.View):
     def __init__(self):
         super().__init__()
 
-        # Initialize camera: don't need to squint in order to see small retro-style sprites
         self.player_sprite = None
         self.physics_engine = None
         self.player_list = None

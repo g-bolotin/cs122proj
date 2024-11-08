@@ -1,29 +1,29 @@
 import arcade
 from src import constants
 from player import Player
-
-MOVEMENT_SPEED = 5
-
+from constants import MOVEMENT_SPEED
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
 
+        # Initialize camera: don't need to squint in order to see small retro-style sprites
         self.player_sprite = None
         self.physics_engine = None
         self.player_list = None
 
     def setup(self):
-        arcade.set_background_color(arcade.color.GREEN)
+        arcade.set_background_color(arcade.color.BLUE_YONDER)
 
         self.player_list = arcade.SpriteList()
 
         # Create player sprite at screen center
         self.player_sprite = Player(
-            filename="../assets/33.png", # Temporary sprite
+            # MOVED TO PLAYER CLASS
+            # filename="../assets/player/cat-front-64-1.png",  # Temporary sprite
             # image_width=32, potential sprite width
             # image_height=32, potential sprite height
-            center_x=constants.SCREEN_WIDTH / 2,
-            center_y=constants.SCREEN_HEIGHT / 2
+            # center_x=constants.SCREEN_WIDTH / 2,
+            # center_y=constants.SCREEN_HEIGHT / 2,
         )
         self.player_list.append(self.player_sprite)
 
@@ -34,6 +34,7 @@ class GameView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        # Activate the camera
         self.player_list.draw()
 
         arcade.draw_text(

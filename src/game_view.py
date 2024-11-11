@@ -1,30 +1,26 @@
 import arcade
 from src import constants
 from player import Player
+from constants import MOVEMENT_SPEED
 
-MOVEMENT_SPEED = 5
 
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
 
-        self.player_sprite = None
+        # Create player sprite at screen center
+        self.player_sprite = Player(
+            center_x=constants.SCREEN_WIDTH / 2,
+            center_y=constants.SCREEN_HEIGHT / 2,
+            scale=1
+        )
         self.physics_engine = None
         self.player_list = None
 
     def setup(self):
-        arcade.set_background_color(arcade.color.GREEN)
+        arcade.set_background_color(arcade.color.BLUE_YONDER)
 
         self.player_list = arcade.SpriteList()
-
-        # Create player sprite at screen center
-        self.player_sprite = Player(
-            filename="../assets/33.png", # Temporary sprite
-            # image_width=32, potential sprite width
-            # image_height=32, potential sprite height
-            center_x=constants.SCREEN_WIDTH / 2,
-            center_y=constants.SCREEN_HEIGHT / 2
-        )
         self.player_list.append(self.player_sprite)
 
         self.physics_engine = arcade.PhysicsEngineSimple(
@@ -34,6 +30,7 @@ class GameView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        # Activate the camera
         self.player_list.draw()
 
         arcade.draw_text(
@@ -47,9 +44,12 @@ class GameView(arcade.View):
     def on_update(self, delta_time):
         self.physics_engine.update()
         self.player_list.update()
+        self.player_sprite.update()
+        self.player_sprite.update_animation()
 
     # WASD movement
     def on_key_press(self, key, modifiers):
+
         if key == arcade.key.W:
             self.player_sprite.change_y = MOVEMENT_SPEED
         elif key == arcade.key.S:

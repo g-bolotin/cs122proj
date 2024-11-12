@@ -4,4 +4,11 @@ SCREEN_TITLE = "TBD Game Name"
 
 # PLAYER
 INITIAL_HEALTH = 5
-MOVEMENT_SPEED = 5
+MOVEMENT_SPEED = 3
+UPDATES_PER_FRAME = 5
+
+# Constants used to track if the player is facing left or right
+LEFT_FACING = 0
+RIGHT_FACING = 1
+FRONT_FACING = 2
+BACK_FACING = 3

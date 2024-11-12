@@ -37,11 +37,11 @@ class GameView(arcade.View):
         self.player_list.draw()
 
         arcade.draw_text(
-            "Lives: 5",
+            "Lives: " + str(constants.INITIAL_HEALTH),
             10,
             constants.SCREEN_HEIGHT - 20,
-            arcade.color.WHITE,
-            14 # font size
+            arcade.color.BLACK,
+            18 # font size
         )
 
     def on_update(self, delta_time):

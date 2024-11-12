@@ -7,6 +7,7 @@ from constants import MOVEMENT_SPEED
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
+        self.active_keys = set()
 
         # Create player sprite at screen center
         self.player_sprite = Player(
@@ -49,19 +50,26 @@ class GameView(arcade.View):
 
     # WASD movement
     def on_key_press(self, key, modifiers):
-
-        if key == arcade.key.W:
-            self.player_sprite.change_y = MOVEMENT_SPEED
-        elif key == arcade.key.S:
-            self.player_sprite.change_y = -MOVEMENT_SPEED
-        elif key == arcade.key.A:
-            self.player_sprite.change_x = -MOVEMENT_SPEED
-        elif key == arcade.key.D:
-            self.player_sprite.change_x = MOVEMENT_SPEED
+        self.active_keys.add(key)
+        if key == arcade.key.W or arcade.key.S in self.active_keys:
+            self.player_sprite.change_y = MOVEMENT_SPEED if arcade.key.W in self.active_keys else -MOVEMENT_SPEED
+        if key == arcade.key.A or arcade.key.D in self.active_keys:
+            self.player_sprite.change_x = MOVEMENT_SPEED if arcade.key.D in self.active_keys else -MOVEMENT_SPEED
 
     # Stop movement
     def on_key_release(self, key, modifiers):
+        self.active_keys.discard(key)
         if key in (arcade.key.W, arcade.key.S):
-            self.player_sprite.change_y = 0
-        elif key in (arcade.key.A, arcade.key.D):
-            self.player_sprite.change_x = 0
+            if arcade.key.W in self.active_keys:
+                self.player_sprite.change_y = MOVEMENT_SPEED
+            elif arcade.key.S in self.active_keys:
+                self.player_sprite.change_y = -MOVEMENT_SPEED
+            else:
+                self.player_sprite.change_y = 0
+        if key in (arcade.key.A, arcade.key.D):
+            if arcade.key.A in self.active_keys:
+                self.player_sprite.change_x = -MOVEMENT_SPEED
+            elif arcade.key.D in self.active_keys:
+                self.player_sprite.change_x = MOVEMENT_SPEED
+            else:
+                self.player_sprite.change_x = 0

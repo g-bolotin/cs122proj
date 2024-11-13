@@ -15,14 +15,21 @@ class GameView(arcade.View):
             center_y=constants.SCREEN_HEIGHT / 2,
             scale=1
         )
+
+
+
         self.physics_engine = None
-        self.player_list = None
+        self.scene = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
 
-        self.player_list = arcade.SpriteList()
-        self.player_list.append(self.player_sprite)
+        # Initialize Scene
+        self.scene = arcade.Scene()
+
+        # Create the Sprite lists
+        self.scene.add_sprite_list("Player")
+        self.scene.add_sprite("Player", self.player_sprite)
 
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
@@ -31,8 +38,9 @@ class GameView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        # Activate the camera
-        self.player_list.draw()
+
+        # Draw our Scene
+        self.scene.draw()
 
         arcade.draw_text(
             "Lives: " + str(constants.INITIAL_HEALTH),
@@ -44,11 +52,12 @@ class GameView(arcade.View):
 
     def on_update(self, delta_time):
         self.physics_engine.update()
-        self.player_list.update()
+        # self.player_list.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
 
     # WASD movement
+    # TODO: Recalculate diagonal movement speed (when traveling UP + L/R or DOWN + L/R)
     def on_key_press(self, key, modifiers):
         self.active_keys.add(key)
         if key == arcade.key.W or arcade.key.S in self.active_keys:

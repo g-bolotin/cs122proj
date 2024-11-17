@@ -42,12 +42,21 @@ class GameView(arcade.View):
         # Draw our Scene
         self.scene.draw()
 
+        sidebar_width = 110
+        arcade.draw_lrtb_rectangle_filled(
+            left=0,
+            right=sidebar_width,
+            bottom=0,
+            top=constants.SCREEN_HEIGHT,
+            color=arcade.color.BLACK
+        )
+
         arcade.draw_text(
-            "Lives: " + str(constants.INITIAL_HEALTH),
-            10,
-            constants.SCREEN_HEIGHT - 20,
-            arcade.color.BLACK,
-            18 # font size
+            "x" + str(constants.INITIAL_HEALTH),
+            70,
+            constants.SCREEN_HEIGHT - 40,
+            arcade.color.WHITE,
+            20 # font size
         )
 
     def on_update(self, delta_time):

@@ -103,11 +103,10 @@ class Player(arcade.Sprite):
         self.texture = self.walk_textures[self.state-1][self.cur_texture_index]
 
     def update(self):
-
         # Edge of screen collision Logic
         super().update()
-        if self.left < 0:
-            self.left = 0
+        if self.left < 110:
+            self.left = 110
         elif self.right > constants.SCREEN_WIDTH - 1:
             self.right = constants.SCREEN_WIDTH - 1
 

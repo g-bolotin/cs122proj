@@ -24,8 +24,9 @@ class MainMenuView(arcade.View):
             constants.SCREEN_WIDTH / 2,
             constants.SCREEN_HEIGHT / 2 + 50,
             arcade.color.GOLD,
-            font_size=50,
-            anchor_x="center"
+            font_size=100,
+            anchor_x="center",
+            font_name=constants.FONT_NAME
         )
 
         self.play_button_x = constants.SCREEN_WIDTH / 2
@@ -51,9 +52,10 @@ class MainMenuView(arcade.View):
             self.play_button_x,
             self.play_button_y,
             arcade.color.BLACK,
-            font_size=20,
+            font_size=24,
             anchor_x="center",
-            anchor_y="center"
+            anchor_y="center",
+            font_name=constants.FONT_NAME
         )
 
     def on_mouse_motion(self, x, y, dx, dy):

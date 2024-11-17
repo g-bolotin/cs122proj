@@ -57,28 +57,31 @@ class GameView(arcade.View):
         self.player_sprite.update_animation()
 
     # WASD movement
-    # TODO: Recalculate diagonal movement speed (when traveling UP + L/R or DOWN + L/R)
     def on_key_press(self, key, modifiers):
         self.active_keys.add(key)
-        if key == arcade.key.W or arcade.key.S in self.active_keys:
-            self.player_sprite.change_y = MOVEMENT_SPEED if arcade.key.W in self.active_keys else -MOVEMENT_SPEED
-        if key == arcade.key.A or arcade.key.D in self.active_keys:
-            self.player_sprite.change_x = MOVEMENT_SPEED if arcade.key.D in self.active_keys else -MOVEMENT_SPEED
+        self.update_movement()
 
-    # Stop movement
     def on_key_release(self, key, modifiers):
         self.active_keys.discard(key)
-        if key in (arcade.key.W, arcade.key.S):
-            if arcade.key.W in self.active_keys:
-                self.player_sprite.change_y = MOVEMENT_SPEED
-            elif arcade.key.S in self.active_keys:
-                self.player_sprite.change_y = -MOVEMENT_SPEED
-            else:
-                self.player_sprite.change_y = 0
-        if key in (arcade.key.A, arcade.key.D):
-            if arcade.key.A in self.active_keys:
-                self.player_sprite.change_x = -MOVEMENT_SPEED
-            elif arcade.key.D in self.active_keys:
-                self.player_sprite.change_x = MOVEMENT_SPEED
-            else:
-                self.player_sprite.change_x = 0
+        self.update_movement()
+
+    def update_movement(self):
+        x = 0
+        y = 0
+        if arcade.key.W in self.active_keys:
+            y += 1
+        if arcade.key.S in self.active_keys:
+            y -= 1
+        if arcade.key.A in self.active_keys:
+            x -= 1
+        if arcade.key.D in self.active_keys:
+            x += 1
+
+        # Normalize the vector if moving diagonally
+        magnitude = (x ** 2 + y ** 2) ** 0.5
+        if magnitude > 0:
+            x = (x / magnitude) * MOVEMENT_SPEED
+            y = (y / magnitude) * MOVEMENT_SPEED
+
+        self.player_sprite.change_x = x
+        self.player_sprite.change_y = y

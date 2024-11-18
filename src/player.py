@@ -9,6 +9,8 @@ class Player(arcade.Sprite):
         self.state = FACE_DOWN   # player directionality
         self.time_counter = 0.0  # for controlling animation frame rate
 
+        self.lives = constants.INITIAL_HEALTH
+
         # Walking textures
         self.walk_left_textures = []
         self.walk_right_textures = []

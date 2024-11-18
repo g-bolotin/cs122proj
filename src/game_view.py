@@ -3,7 +3,6 @@ from src import constants
 from player import Player
 from constants import MOVEMENT_SPEED
 
-
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -16,10 +15,9 @@ class GameView(arcade.View):
             scale=1
         )
 
-
-
         self.physics_engine = None
         self.scene = None
+        self.cat_head = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -36,6 +34,10 @@ class GameView(arcade.View):
             arcade.SpriteList()
         )
 
+        self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
+        self.cat_head.center_x = 35
+        self.cat_head.center_y = constants.SCREEN_HEIGHT - 30
+
     def on_draw(self):
         arcade.start_render()
 
@@ -51,12 +53,15 @@ class GameView(arcade.View):
             color=arcade.color.BLACK
         )
 
+        self.cat_head.draw()
+
         arcade.draw_text(
-            "x" + str(constants.INITIAL_HEALTH),
-            70,
+            str(self.player_sprite.lives),
+            80,
             constants.SCREEN_HEIGHT - 40,
             arcade.color.WHITE,
-            20 # font size
+            35, # font size
+            font_name=constants.FONT_NAME
         )
 
     def on_update(self, delta_time):

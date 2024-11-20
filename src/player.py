@@ -2,6 +2,9 @@ import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
+from src.constants import SIDEBAR_WIDTH, LEVEL_BORDER_SIZE
+
+
 class Player(arcade.Sprite):
     def __init__(self, center_x=0, center_y=0, scale=1):
         super().__init__(scale=scale, center_x=center_x, center_y=center_y)
@@ -107,12 +110,13 @@ class Player(arcade.Sprite):
     def update(self):
         # Edge of screen collision Logic
         super().update()
-        if self.left < 110:
-            self.left = 110
-        elif self.right > constants.SCREEN_WIDTH - 1:
-            self.right = constants.SCREEN_WIDTH - 1
+        if self.left < LEVEL_BORDER_SIZE:
+            self.left = LEVEL_BORDER_SIZE
+        # Adjust collision to take sidebar offset into account
+        elif self.right > constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE:
+            self.right = constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE
 
-        if self.bottom < 0:
-            self.bottom = 0
-        elif self.top > constants.SCREEN_HEIGHT - 1:
-            self.top = constants.SCREEN_HEIGHT - 1
+        if self.bottom < LEVEL_BORDER_SIZE:
+            self.bottom = LEVEL_BORDER_SIZE
+        elif self.top > constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE:
+            self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE

@@ -1,7 +1,8 @@
 import arcade
 from src import constants
 from player import Player
-from constants import MOVEMENT_SPEED
+from constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT
+
 
 class GameView(arcade.View):
     def __init__(self):
@@ -18,12 +19,25 @@ class GameView(arcade.View):
         self.physics_engine = None
         self.scene = None
         self.cat_head = None
+        self.tile_map = None
+        self.camera = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
 
-        # Initialize Scene
-        self.scene = arcade.Scene()
+        dock_tilemap = "../assets/environment/dock-stage.json"
+        layer_options = {
+            "Borders": {
+                "use_spatial_hash": True,
+            },
+        }
+
+        # Read in the tiled map
+        self.tile_map = arcade.load_tilemap(dock_tilemap, TILE_SCALING, layer_options)
+
+        # Initialize Scene with our TileMap, this will automatically add all layers
+        # from the map as SpriteLists in the scene in the proper order.
+        self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Create the Sprite lists
         self.scene.add_sprite_list("Player")
@@ -38,23 +52,33 @@ class GameView(arcade.View):
         self.cat_head.center_x = 35
         self.cat_head.center_y = constants.SCREEN_HEIGHT - 30
 
+        # Initialize camera
+        self.camera = arcade.Camera(SCREEN_WIDTH + SIDEBAR_WIDTH, SCREEN_HEIGHT)
+
     def on_draw(self):
         arcade.start_render()
 
-        # Draw our Scene
+        # Use the camera to shift the game area
+        self.camera.use()
         self.scene.draw()
 
-        sidebar_width = 110
+        # Reset camera to default to draw the sidebar
+        self.camera.use()
+        arcade.set_viewport(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT)
+
+        # Draw sidebar
         arcade.draw_lrtb_rectangle_filled(
             left=0,
-            right=sidebar_width,
+            right=SIDEBAR_WIDTH,
             bottom=0,
             top=constants.SCREEN_HEIGHT,
             color=arcade.color.BLACK
         )
 
+        # Draw life counter icon
         self.cat_head.draw()
 
+        # Draw life counter text
         arcade.draw_text(
             str(self.player_sprite.lives),
             80,
@@ -69,6 +93,9 @@ class GameView(arcade.View):
         # self.player_list.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
+
+        # Keep the camera focused on the game area
+        self.camera.move_to((-SIDEBAR_WIDTH, 0))
 
     # WASD movement
     def on_key_press(self, key, modifiers):

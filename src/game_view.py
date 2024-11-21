@@ -2,6 +2,9 @@ import arcade
 from src import constants
 from player import Player
 from constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT
+import random
+
+from src.enemies.fishhead import Fishhead
 
 
 class GameView(arcade.View):
@@ -42,6 +45,7 @@ class GameView(arcade.View):
         # Create the Sprite lists
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite("Player", self.player_sprite)
+        self.scene.add_sprite_list("Enemies")
 
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
@@ -90,9 +94,44 @@ class GameView(arcade.View):
 
     def on_update(self, delta_time):
         self.physics_engine.update()
-        # self.player_list.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
+
+        # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
+        top_coords = {'x': 268, 'y': 0}
+        bottom_coords = {'x': 268, 'y': SCREEN_HEIGHT-1}
+        left_coords = {'x': 0, 'y': 268}  # no idea why this one doesn't require offset by sidebar
+        right_coords = {'x': SCREEN_WIDTH-SIDEBAR_WIDTH, 'y': 268}
+        coords = [top_coords, bottom_coords, left_coords, right_coords]
+
+        # Randomly select enemy spawning time and position
+        if random.random() < 0.03:              # Time
+            spawn_pos = random.randint(0, 3)    # Spawn position: top, bottom, left, right
+            tile_num = random.randint(1, 4)     # Tile: one of 4 tiles
+            position = coords[spawn_pos]        # Appropriate coordinates for the selected spawn position
+
+            # Tile multiplier - get next 3 tiles beyond the topmost or leftmost one
+            x_mult = 0
+            y_mult = 0
+            if spawn_pos < 2:
+                x_mult = tile_num
+            else:
+                y_mult = tile_num
+
+            enemy = Fishhead(
+                center_x=position.get('x') + (48 * x_mult),
+                center_y=position.get('y') + (48 * y_mult),
+                scale=0.75
+            )
+
+            self.scene.add_sprite("Enemies", enemy)
+
+            # Draw the enemy at the spawn
+            # Move towards the player
+            # If touches player, player loses life
+            # If player life count = 0, game over
+
+
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))

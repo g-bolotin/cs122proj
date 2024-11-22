@@ -30,6 +30,9 @@ class Enemy(arcade.Sprite):
             self.walk_down_textures
         ]
 
+        # Pathfinding
+        self.path = None
+
     def update(self):
 
         # Edge of screen collision Logic
@@ -44,3 +47,6 @@ class Enemy(arcade.Sprite):
             self.bottom = LEVEL_BORDER_SIZE
         elif self.top > constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE:
             self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE
+
+    # def update_path(self, player_sprite, delta_time):
+    #     self.path

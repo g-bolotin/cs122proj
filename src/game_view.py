@@ -31,7 +31,7 @@ class GameView(arcade.View):
         dock_tilemap = "../assets/environment/dock-stage.json"
         layer_options = {
             "Borders": {
-                "use_spatial_hash": True,
+                "use_spatial_hash": True
             },
         }
 
@@ -47,9 +47,10 @@ class GameView(arcade.View):
         self.scene.add_sprite("Player", self.player_sprite)
         self.scene.add_sprite_list("Enemies")
 
+        # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
-            arcade.SpriteList()
+            walls=self.scene["Borders"]
         )
 
         self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
@@ -125,13 +126,6 @@ class GameView(arcade.View):
             )
 
             self.scene.add_sprite("Enemies", enemy)
-
-            # Draw the enemy at the spawn
-            # Move towards the player
-            # If touches player, player loses life
-            # If player life count = 0, game over
-
-
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))

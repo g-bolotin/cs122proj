@@ -106,17 +106,3 @@ class Player(arcade.Sprite):
             if self.cur_texture_index >= len(self.walk_textures[self.state - 1]):
                 self.cur_texture_index = 0
         self.texture = self.walk_textures[self.state-1][self.cur_texture_index]
-
-    def update(self):
-        # Edge of screen collision Logic
-        super().update()
-        if self.left < LEVEL_BORDER_SIZE:
-            self.left = LEVEL_BORDER_SIZE
-        # Adjust collision to take sidebar offset into account
-        elif self.right > constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE:
-            self.right = constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE
-
-        if self.bottom < LEVEL_BORDER_SIZE:
-            self.bottom = LEVEL_BORDER_SIZE
-        elif self.top > constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE:
-            self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE

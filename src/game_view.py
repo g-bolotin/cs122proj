@@ -48,6 +48,7 @@ class GameView(arcade.View):
         self.scene.add_sprite_list("Enemies")
 
         # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
+        # This will allow us to add other walls easily later on
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
             walls=self.scene["Borders"]

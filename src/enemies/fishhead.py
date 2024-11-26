@@ -112,6 +112,7 @@ class Fishhead(Enemy):
         player_position = (player_sprite.center_x, player_sprite.center_y)
 
         # Recalculate path if player has moved significantly
+        # Uses Euclidean distance and compares it to the target position (slightly offset from actual player position)
         if self.last_player_pos is None or (
                 (self.last_player_pos[0] - player_position[0]) ** 2 +
                 (self.last_player_pos[1] - player_position[1]) ** 2

@@ -1,11 +1,19 @@
 import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
+
+from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
 from src.enemies.enemy import Enemy
+
+MIN_DISTANCE = 2  # Small enough to consider the target reached
 
 class Fishhead(Enemy):
     def __init__(self, center_x=0, center_y=0, scale=1):
         super().__init__(scale=scale, center_x=center_x, center_y=center_y)
+
+        self.current_target_index = 0
+        self.last_player_pos = None
+
         # For advancing frames in the animation by looping through textures
         self.cur_texture_index = 0
         self.texture_change_distance = 20
@@ -84,3 +92,63 @@ class Fishhead(Enemy):
             if self.cur_texture_index >= len(self.walk_textures[self.state - 1]):
                 self.cur_texture_index = 0
         self.texture = self.walk_textures[self.state - 1][self.cur_texture_index]
+
+    def update(self):
+        # Edge of screen collision Logic
+        super().update()
+        if self.left < LEVEL_BORDER_SIZE:
+            self.left = LEVEL_BORDER_SIZE
+        # Adjust collision to take sidebar offset into account
+        elif self.right > constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE:
+            self.right = constants.SCREEN_WIDTH - 1 - SIDEBAR_WIDTH - LEVEL_BORDER_SIZE
+
+        if self.bottom < LEVEL_BORDER_SIZE:
+            self.bottom = LEVEL_BORDER_SIZE
+        elif self.top > constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE:
+            self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE
+
+    def update_path(self, player_sprite, wall_list, delta_time):
+
+        player_position = (player_sprite.center_x, player_sprite.center_y)
+
+        # Recalculate path if player has moved significantly
+        if self.last_player_pos is None or (
+                (self.last_player_pos[0] - player_position[0]) ** 2 +
+                (self.last_player_pos[1] - player_position[1]) ** 2
+        ) ** 0.5 > MIN_DISTANCE:
+            self.path = arcade.astar_calculate_path(
+                start_point=(self.center_x, self.center_y),
+                end_point=player_position,
+                astar_barrier_list=wall_list,
+                diagonal_movement=False
+            )
+            self.current_target_index = 0  # Reset to the start of the path
+            self.last_player_pos = player_position
+
+    def follow_path(self, speed, delta_time):
+        if not self.path or self.current_target_index >= len(self.path):
+            self.change_x = 0
+            self.change_y = 0
+            return  # No path or path complete
+
+        # Get the current target waypoint
+        target_x, target_y = self.path[self.current_target_index]
+
+        # Calculate the difference between the current position and the target
+        diff_x = target_x - self.center_x
+        diff_y = target_y - self.center_y
+
+        # Determine the movement direction
+        distance = (diff_x ** 2 + diff_y ** 2) ** 0.5  # Pythagorean distance
+        if distance < speed * delta_time:  # Close enough to the target
+            self.center_x = target_x
+            self.center_y = target_y
+            self.current_target_index += 1  # Move to the next waypoint
+        else:
+            # Normalize the direction vector and scale by speed
+            self.change_x = (diff_x / distance) * speed
+            self.change_y = (diff_y / distance) * speed
+
+            # Move by the computed amount
+            self.center_x += self.change_x * delta_time
+            self.center_y += self.change_y * delta_time

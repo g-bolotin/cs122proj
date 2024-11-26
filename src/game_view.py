@@ -1,9 +1,12 @@
 import arcade
+from arcade import SpriteList
+
 from src import constants
 from player import Player
 from constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT
 import random
 
+from src.enemies.enemy import ENEMY_SPEED_IN_PIXELS
 from src.enemies.fishhead import Fishhead
 
 
@@ -24,6 +27,8 @@ class GameView(arcade.View):
         self.cat_head = None
         self.tile_map = None
         self.camera = None
+        self.astar_barrier_list = None
+        self.enemy_path_list = []
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -48,10 +53,21 @@ class GameView(arcade.View):
         self.scene.add_sprite_list("Enemies")
 
         # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
-        # This will allow us to add other walls easily later on
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
             walls=self.scene["Borders"]
+        )
+
+        # Pathfinding Wall List
+        self.astar_barrier_list = arcade.AStarBarrierList(
+            blocking_sprites=self.scene["Borders"],
+            grid_size=48,
+            moving_sprite=self.player_sprite,
+            left=-48,
+            right=SCREEN_WIDTH + 48,
+            top=SCREEN_HEIGHT + 48,
+            bottom=-48
+
         )
 
         self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
@@ -67,6 +83,15 @@ class GameView(arcade.View):
         # Use the camera to shift the game area
         self.camera.use()
         self.scene.draw()
+
+        # Draw borders for debugging
+        # for barrier in self.scene["Borders"]:
+        #     arcade.draw_rectangle_outline(barrier.center_x, barrier.center_y, 48, 48, arcade.color.RED)
+        for barrier in self.astar_barrier_list.blocking_sprites:
+            arcade.draw_rectangle_outline(
+                barrier.center_x, barrier.center_y,
+                48, 48, arcade.color.RED
+            )
 
         # Reset camera to default to draw the sidebar
         self.camera.use()
@@ -107,7 +132,7 @@ class GameView(arcade.View):
         coords = [top_coords, bottom_coords, left_coords, right_coords]
 
         # Randomly select enemy spawning time and position
-        if random.random() < 0.03:              # Time
+        if random.random() < 0.01:              # Time
             spawn_pos = random.randint(0, 3)    # Spawn position: top, bottom, left, right
             tile_num = random.randint(1, 4)     # Tile: one of 4 tiles
             position = coords[spawn_pos]        # Appropriate coordinates for the selected spawn position
@@ -125,11 +150,15 @@ class GameView(arcade.View):
                 center_y=position.get('y') + (48 * y_mult),
                 scale=0.75
             )
-
-            self.scene.add_sprite("Enemies", enemy)
+            self.scene["Enemies"].append(enemy)
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
+
+        for e in self.scene["Enemies"]:
+            e.update_path(self.player_sprite, self.astar_barrier_list, delta_time)
+            e.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
+            e.update_animation()
 
     # WASD movement
     def on_key_press(self, key, modifiers):

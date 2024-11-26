@@ -2,9 +2,9 @@ import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
-from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
+from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH, MOVEMENT_SPEED
 
-
+ENEMY_SPEED_IN_PIXELS = 48
 class Enemy(arcade.Sprite):
     def __init__(self, center_x=0, center_y=0, scale=1):
         super().__init__(scale=scale, center_x=center_x, center_y=center_y)
@@ -48,5 +48,14 @@ class Enemy(arcade.Sprite):
         elif self.top > constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE:
             self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE
 
-    # def update_path(self, player_sprite, delta_time):
-    #     self.path
+    # Rudimentary pathfinding, override to implement movement
+    def update_path(self, player_sprite, wall_list, delta_time):
+
+        self.path = arcade.astar_calculate_path(
+            start_point=self.position,
+            end_point=player_sprite.position,
+            astar_barrier_list=wall_list,
+            diagonal_movement=False
+        )
+        if self.path:
+            print(self.path)

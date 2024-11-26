@@ -5,7 +5,7 @@ FONT_NAME = "Kenney Pixel"
 
 # PLAYER
 INITIAL_HEALTH = 5
-MOVEMENT_SPEED = 2.5
+MOVEMENT_SPEED = 2.0
 UPDATES_PER_FRAME = 5
 
 # Constants used to track if the player is facing left or right

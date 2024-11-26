@@ -1,7 +1,13 @@
 import arcade
+from arcade import SpriteList
+
 from src import constants
 from player import Player
 from constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT
+import random
+
+from src.enemies.enemy import ENEMY_SPEED_IN_PIXELS
+from src.enemies.fishhead import Fishhead
 
 
 class GameView(arcade.View):
@@ -21,6 +27,8 @@ class GameView(arcade.View):
         self.cat_head = None
         self.tile_map = None
         self.camera = None
+        self.astar_barrier_list = None
+        self.enemy_path_list = []
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -28,7 +36,7 @@ class GameView(arcade.View):
         dock_tilemap = "../assets/environment/dock-stage.json"
         layer_options = {
             "Borders": {
-                "use_spatial_hash": True,
+                "use_spatial_hash": True
             },
         }
 
@@ -42,10 +50,24 @@ class GameView(arcade.View):
         # Create the Sprite lists
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite("Player", self.player_sprite)
+        self.scene.add_sprite_list("Enemies")
 
+        # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite,
-            arcade.SpriteList()
+            walls=self.scene["Borders"]
+        )
+
+        # Pathfinding Wall List
+        self.astar_barrier_list = arcade.AStarBarrierList(
+            blocking_sprites=self.scene["Borders"],
+            grid_size=48,
+            moving_sprite=self.player_sprite,
+            left=-48,
+            right=SCREEN_WIDTH + 48,
+            top=SCREEN_HEIGHT + 48,
+            bottom=-48
+
         )
 
         self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
@@ -61,6 +83,13 @@ class GameView(arcade.View):
         # Use the camera to shift the game area
         self.camera.use()
         self.scene.draw()
+
+        # Draw borders for debugging
+        # for barrier in self.astar_barrier_list.blocking_sprites:
+        #     arcade.draw_rectangle_outline(
+        #         barrier.center_x, barrier.center_y,
+        #         48, 48, arcade.color.RED
+        #     )
 
         # Reset camera to default to draw the sidebar
         self.camera.use()
@@ -90,12 +119,44 @@ class GameView(arcade.View):
 
     def on_update(self, delta_time):
         self.physics_engine.update()
-        # self.player_list.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
 
+        # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
+        top_coords = {'x': 268, 'y': 0}
+        bottom_coords = {'x': 268, 'y': SCREEN_HEIGHT-1}
+        left_coords = {'x': 0, 'y': 268}  # no idea why this one doesn't require offset by sidebar
+        right_coords = {'x': SCREEN_WIDTH-SIDEBAR_WIDTH, 'y': 268}
+        coords = [top_coords, bottom_coords, left_coords, right_coords]
+
+        # Randomly select enemy spawning time and position
+        if random.random() < 0.01:              # Time
+            spawn_pos = random.randint(0, 3)    # Spawn position: top, bottom, left, right
+            tile_num = random.randint(1, 4)     # Tile: one of 4 tiles
+            position = coords[spawn_pos]        # Appropriate coordinates for the selected spawn position
+
+            # Tile multiplier - get next 3 tiles beyond the topmost or leftmost one
+            x_mult = 0
+            y_mult = 0
+            if spawn_pos < 2:
+                x_mult = tile_num
+            else:
+                y_mult = tile_num
+
+            enemy = Fishhead(
+                center_x=position.get('x') + (48 * x_mult),
+                center_y=position.get('y') + (48 * y_mult),
+                scale=0.75
+            )
+            self.scene["Enemies"].append(enemy)
+
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
+
+        for e in self.scene["Enemies"]:
+            e.update_path(self.player_sprite, self.astar_barrier_list, delta_time)
+            e.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
+            e.update_animation()
 
     # WASD movement
     def on_key_press(self, key, modifiers):

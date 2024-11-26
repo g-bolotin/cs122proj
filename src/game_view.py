@@ -85,13 +85,11 @@ class GameView(arcade.View):
         self.scene.draw()
 
         # Draw borders for debugging
-        # for barrier in self.scene["Borders"]:
-        #     arcade.draw_rectangle_outline(barrier.center_x, barrier.center_y, 48, 48, arcade.color.RED)
-        for barrier in self.astar_barrier_list.blocking_sprites:
-            arcade.draw_rectangle_outline(
-                barrier.center_x, barrier.center_y,
-                48, 48, arcade.color.RED
-            )
+        # for barrier in self.astar_barrier_list.blocking_sprites:
+        #     arcade.draw_rectangle_outline(
+        #         barrier.center_x, barrier.center_y,
+        #         48, 48, arcade.color.RED
+        #     )
 
         # Reset camera to default to draw the sidebar
         self.camera.use()

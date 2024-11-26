@@ -213,12 +213,3 @@ class Fishhead(Enemy):
                 # Move by the computed amount
                 self.center_x += self.change_x * delta_time
                 self.center_y += self.change_y * delta_time
-
-    def has_line_of_sight(self, target_position, wall_list):
-        # Check if there is a clear line of sight to the target.
-        return arcade.has_line_of_sight(
-            point_1=(self.center_x, self.center_y),
-            point_2=target_position,
-            walls=wall_list.blocking_sprites,
-            max_distance=500
-        )

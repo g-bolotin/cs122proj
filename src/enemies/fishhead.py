@@ -3,14 +3,18 @@ from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
 from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
-from src.enemies.enemy import Enemy
+from src.enemies.enemy import Enemy, ENEMY_SPEED_IN_PIXELS
 
-MIN_DISTANCE = 2  # Small enough to consider the target reached
+MIN_DISTANCE = 192  # distance player must move before enemy path is recalculated
+CLEARED_SPAWN = 100  # distance needed to move out of spawn area
 
 class Fishhead(Enemy):
     def __init__(self, center_x=0, center_y=0, scale=1):
         super().__init__(scale=scale, center_x=center_x, center_y=center_y)
 
+        self.total_traveled_distance = 0
+        self.straight_line_phase = True
+        self.path_recalculation_timer = 0
         self.current_target_index = 0
         self.last_player_pos = None
 
@@ -108,48 +112,113 @@ class Fishhead(Enemy):
             self.top = constants.SCREEN_HEIGHT - 1 - LEVEL_BORDER_SIZE
 
     def update_path(self, player_sprite, wall_list, delta_time):
+        if self.straight_line_phase:
+            # No need to update path until enemy is out of spawn
+            pass
 
-        player_position = (player_sprite.center_x, player_sprite.center_y)
-
-        # Recalculate path if player has moved significantly
-        # Uses Euclidean distance and compares it to the target position (slightly offset from actual player position)
-        if self.last_player_pos is None or (
-                (self.last_player_pos[0] - player_position[0]) ** 2 +
-                (self.last_player_pos[1] - player_position[1]) ** 2
-        ) ** 0.5 > MIN_DISTANCE:
-            self.path = arcade.astar_calculate_path(
-                start_point=(self.center_x, self.center_y),
-                end_point=player_position,
-                astar_barrier_list=wall_list,
-                diagonal_movement=False
+        else:
+            # Predict the player's future position
+            player_velocity_x = player_sprite.change_x
+            player_velocity_y = player_sprite.change_y
+            time_ahead = 0.5  # Predict 0.5 seconds into the future
+            predicted_player_position = (
+                player_sprite.center_x + player_velocity_x * time_ahead,
+                player_sprite.center_y + player_velocity_y * time_ahead
             )
-            self.current_target_index = 0  # Reset to the start of the path
-            self.last_player_pos = player_position
+
+            # Check if path recalculation is needed
+            # Uses Euclidean distance and compares it to the minimum distance the player needs
+            # to move in order to recalculate (right now 192px = 5 tiles)
+            # Uses predicted player position based on current velocity + cooldown to ensure near
+            # constant enemy movement towards the player
+
+            # If the player moves at least 5 tiles and the cooldown for recalc is up...
+            if self.path_recalculation_timer <= 0 and (
+                    self.last_player_pos is None or (
+                    (self.last_player_pos[0] - predicted_player_position[0]) ** 2 +
+                    (self.last_player_pos[1] - predicted_player_position[1]) ** 2
+                    ) ** 0.5 > MIN_DISTANCE
+            ):
+                # Calculate new path
+                new_path = arcade.astar_calculate_path(
+                    start_point=(self.center_x, self.center_y),
+                    end_point=predicted_player_position,
+                    astar_barrier_list=wall_list,
+                    diagonal_movement=False
+                )
+                # Update path and cooldown
+                if new_path:
+                    self.path = new_path
+                    self.current_target_index = 0
+                    self.last_player_pos = predicted_player_position
+                self.path_recalculation_timer = 0.2  # 200ms cooldown
+            else:
+                self.path_recalculation_timer -= delta_time
 
     def follow_path(self, speed, delta_time):
-        if not self.path or self.current_target_index >= len(self.path):
+        if (not self.path or self.current_target_index >= len(self.path)) and not self.straight_line_phase:
             self.change_x = 0
             self.change_y = 0
             return  # No path or path complete
 
-        # Get the current target waypoint
-        target_x, target_y = self.path[self.current_target_index]
+        # Prevents enemies from getting stuck in spawn borders
+        # 384, 384 is roughly the center of the map, enemies will travel straight to it until they exit spawn
+        if self.straight_line_phase:
+            # Calculate direction to the center
+            direction_x = 384 - self.center_x
+            direction_y = 384 - self.center_y
+            abs_dir_x = abs(direction_x)
+            abs_dir_y = abs(direction_y)
 
-        # Calculate the difference between the current position and the target
-        diff_x = target_x - self.center_x
-        diff_y = target_y - self.center_y
+            # Move only in the dominant direction (no diagonal movement)
+            if abs_dir_x > abs_dir_y:
+                # Move horizontally
+                self.change_x = ENEMY_SPEED_IN_PIXELS if direction_x > 0 else -ENEMY_SPEED_IN_PIXELS
+                self.change_y = 0
+            else:
+                # Move vertically
+                self.change_y = ENEMY_SPEED_IN_PIXELS if direction_y > 0 else -ENEMY_SPEED_IN_PIXELS
+                self.change_x = 0
 
-        # Determine the movement direction
-        distance = (diff_x ** 2 + diff_y ** 2) ** 0.5  # Pythagorean distance
-        if distance < speed * delta_time:  # Close enough to the target
-            self.center_x = target_x
-            self.center_y = target_y
-            self.current_target_index += 1  # Move to the next waypoint
-        else:
-            # Normalize the direction vector and scale by speed
-            self.change_x = (diff_x / distance) * speed
-            self.change_y = (diff_y / distance) * speed
-
-            # Move by the computed amount
+            # Move the enemy
             self.center_x += self.change_x * delta_time
             self.center_y += self.change_y * delta_time
+
+            # Update total traveled distance
+            self.total_traveled_distance += abs(self.change_x * delta_time) + abs(self.change_y * delta_time)
+
+            # Check if the enemy has cleared the spawn area
+            if self.total_traveled_distance > CLEARED_SPAWN:
+                self.straight_line_phase = False
+
+        else:
+            # Get the current target waypoint
+            target_x, target_y = self.path[self.current_target_index]
+
+            # Calculate the difference between the current position and the target
+            diff_x = target_x - self.center_x
+            diff_y = target_y - self.center_y
+
+            # Determine the movement direction
+            distance = (diff_x ** 2 + diff_y ** 2) ** 0.5  # Pythagorean distance
+            if distance < speed * delta_time:  # Close enough to the target
+                self.center_x = target_x
+                self.center_y = target_y
+                self.current_target_index += 1  # Move to the next waypoint
+            else:
+                # Normalize the direction vector and scale by speed
+                self.change_x = (diff_x / distance) * speed
+                self.change_y = (diff_y / distance) * speed
+
+                # Move by the computed amount
+                self.center_x += self.change_x * delta_time
+                self.center_y += self.change_y * delta_time
+
+    def has_line_of_sight(self, target_position, wall_list):
+        # Check if there is a clear line of sight to the target.
+        return arcade.has_line_of_sight(
+            point_1=(self.center_x, self.center_y),
+            point_2=target_position,
+            walls=wall_list.blocking_sprites,
+            max_distance=500
+        )

@@ -1,0 +1,46 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "/Users/gbolotin/Tiled Tilemaps/dock-stage.tmx": {
+            "scale": 0.6225097656249999,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 512.4417601380502,
+                "y": 512.4417601380501
+            }
+        },
+        "dock-stage.tmx": {
+            "scale": 0.4676,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 513.2591958939263,
+                "y": 502.5662959794696
+            }
+        }
+    },
+    "last.exportedFilePath": "/Users/gbolotin/git/122proj/cs122proj/assets/environment/tiled_tilemaps",
+    "last.imagePath": "/Users/gbolotin/git/122proj/sprites/environment",
+    "map.height": 16,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "map.width": 16,
+    "openFiles": [
+    ],
+    "project": "untitled.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}

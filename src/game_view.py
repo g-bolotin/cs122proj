@@ -33,7 +33,7 @@ class GameView(arcade.View):
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
 
-        dock_tilemap = "../assets/environment/dock-stage.json"
+        dock_tilemap = "../assets/environment/tiled_tilemaps/dock-stage.json"
         layer_options = {
             "Borders": {
                 "use_spatial_hash": True

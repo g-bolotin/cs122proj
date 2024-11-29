@@ -3,6 +3,7 @@ from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
 from src.constants import SIDEBAR_WIDTH, LEVEL_BORDER_SIZE
+from src.yarn_ball import YarnBall
 
 
 class Player(arcade.Sprite):
@@ -64,6 +65,9 @@ class Player(arcade.Sprite):
 
         self.texture = self.walk_down_textures[0]  # set default idle to facing down
 
+        # yarn ball projectiles
+        self.yarn_balls = arcade.SpriteList()
+
     def update_animation(self, delta_time: float = 1 / 60):
         self.time_counter += delta_time  # time for controlling frame rate
 
@@ -122,3 +126,14 @@ class Player(arcade.Sprite):
 
         if self.top > constants.SCREEN_HEIGHT:
             self.top = constants.SCREEN_HEIGHT
+
+    def shoot(self):
+        directions = {
+            1: (1, 0), # RIGHT
+            2: (-1, 0), # LEFT
+            3: (0, 1), # UP
+            4: (0, -1) # DOWN
+        }
+        direction = directions[self.state]
+        yarn_ball = YarnBall(direction, (self.center_x, self.center_y))
+        self.yarn_balls.append(yarn_ball)

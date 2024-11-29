@@ -33,6 +33,8 @@ class Enemy(arcade.Sprite):
         # Pathfinding
         self.path = None
 
+        self.health = 3
+
     def update(self):
 
         # Edge of screen collision Logic
@@ -59,3 +61,8 @@ class Enemy(arcade.Sprite):
         )
         if self.path:
             print(self.path)
+
+    def take_damage(self):
+        self.health -= 1
+        if self.health <= 0:
+            self.kill()

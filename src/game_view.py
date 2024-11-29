@@ -29,6 +29,7 @@ class GameView(arcade.View):
         self.camera = None
         self.astar_barrier_list = None
         self.enemy_path_list = []
+        self.yarn_ball_list = self.player_sprite.yarn_balls
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -91,6 +92,8 @@ class GameView(arcade.View):
         #         48, 48, arcade.color.RED
         #     )
 
+        self.player_sprite.yarn_balls.draw()
+
         # Reset camera to default to draw the sidebar
         self.camera.use()
         arcade.set_viewport(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT)
@@ -121,6 +124,7 @@ class GameView(arcade.View):
         self.physics_engine.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
+        self.player_sprite.yarn_balls.update()
 
         # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
         top_coords = {'x': 268, 'y': 0}
@@ -158,10 +162,21 @@ class GameView(arcade.View):
             e.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
             e.update_animation()
 
+        for yarn_ball in self.yarn_ball_list:
+            # Check collision
+            enemies_hit = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
+            for enemy in enemies_hit:
+                enemy.take_damage()
+                yarn_ball.kill()
+
     # WASD movement
     def on_key_press(self, key, modifiers):
         self.active_keys.add(key)
         self.update_movement()
+
+        # shoot yarn ball
+        if key == arcade.key.SPACE:
+            self.player_sprite.shoot()
 
     def on_key_release(self, key, modifiers):
         self.active_keys.discard(key)

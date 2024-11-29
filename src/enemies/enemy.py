@@ -32,8 +32,7 @@ class Enemy(arcade.Sprite):
 
         # Pathfinding
         self.path = None
-
-        self.health = 3
+        self.health = 0
 
     def update(self):
 

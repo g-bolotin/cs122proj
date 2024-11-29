@@ -92,6 +92,7 @@ class GameView(arcade.View):
         #         48, 48, arcade.color.RED
         #     )
 
+        # Draw yarn balls before camera reset
         self.player_sprite.yarn_balls.draw()
 
         # Reset camera to default to draw the sidebar

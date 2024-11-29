@@ -28,6 +28,8 @@ class Fishhead(Enemy):
         self.width = 68
         self.height = 68
 
+        self.health = 3
+
         # Load walk right animation frames
         for i in range(1, 9):
             texture_name = f"fishhead-68-{i}.png"

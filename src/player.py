@@ -106,3 +106,19 @@ class Player(arcade.Sprite):
             if self.cur_texture_index >= len(self.walk_textures[self.state - 1]):
                 self.cur_texture_index = 0
         self.texture = self.walk_textures[self.state-1][self.cur_texture_index]
+
+    def update(self):
+        super().update()
+
+        # Prevent player from moving out of bounds
+        if self.left < 0:
+            self.left = 0
+
+        if self.right > constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH:
+            self.right = constants.SCREEN_WIDTH - constants.SIDEBAR_WIDTH
+
+        if self.bottom < 0:
+            self.bottom = 0
+
+        if self.top > constants.SCREEN_HEIGHT:
+            self.top = constants.SCREEN_HEIGHT

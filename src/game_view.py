@@ -9,6 +9,7 @@ import random
 
 from src.enemies.enemy import ENEMY_SPEED_IN_PIXELS
 from src.enemies.fishhead import Fishhead
+from src.views.win_view import WinView
 
 
 class GameView(arcade.View):
@@ -31,6 +32,11 @@ class GameView(arcade.View):
         self.astar_barrier_list = None
         self.enemy_path_list = []
         self.yarn_ball_list = self.player_sprite.yarn_balls
+        self.enemy_spawn_rate = 0.01
+
+        # Level Timer
+        self.remaining_time = 60.0
+        self.timer_text = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -75,6 +81,17 @@ class GameView(arcade.View):
         self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
         self.cat_head.center_x = 35
         self.cat_head.center_y = constants.SCREEN_HEIGHT - 30
+
+        # Level timer text
+        self.timer_text = arcade.Text(
+            text="1:00",
+            start_x=45,
+            start_y=SCREEN_HEIGHT - 80,
+            color=arcade.color.WHITE,
+            font_size=35,
+            anchor_x="center",
+            font_name=constants.FONT_NAME
+        )
 
         # Initialize camera
         self.camera = arcade.Camera(SCREEN_WIDTH + SIDEBAR_WIDTH, SCREEN_HEIGHT)
@@ -122,11 +139,41 @@ class GameView(arcade.View):
             font_name=constants.FONT_NAME
         )
 
+        # Draw timer text
+        self.timer_text.draw()
+
     def on_update(self, delta_time):
         self.physics_engine.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
         self.player_sprite.yarn_balls.update()
+
+        # Subtract delta_time from remaining_time
+        self.remaining_time -= delta_time
+
+        # Ensure the timer doesn't go into negatives
+        if self.remaining_time <= 0:
+            self.remaining_time = 0
+            win_view = WinView()
+            self.window.show_view(win_view)
+            return
+
+        # Calculate minutes and seconds
+        minutes = int(self.remaining_time) // 60
+        seconds = int(self.remaining_time) % 60
+
+        # Update the timer text
+        self.timer_text.text = f"{minutes:01d}:{seconds:02d}"
+
+        # Increase enemy spawn rate halfway through level
+        if self.remaining_time <= 30:
+            self.timer_text.color = arcade.color.GOLD
+            self.enemy_spawn_rate = 0.02
+
+        # Change text color to indicate last 10s before level complete
+        if self.remaining_time <= 10:
+            self.timer_text.color = arcade.color.GREEN
+            self.enemy_spawn_rate = 0.03
 
         # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
         top_coords = {'x': 268, 'y': 0}
@@ -136,7 +183,7 @@ class GameView(arcade.View):
         coords = [top_coords, bottom_coords, left_coords, right_coords]
 
         # Randomly select enemy spawning time and position
-        if random.random() < 0.01:              # Time
+        if random.random() < self.enemy_spawn_rate:              # Time
             spawn_pos = random.randint(0, 3)    # Spawn position: top, bottom, left, right
             tile_num = random.randint(1, 4)     # Tile: one of 4 tiles
             position = coords[spawn_pos]        # Appropriate coordinates for the selected spawn position

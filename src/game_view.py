@@ -1,5 +1,6 @@
 import arcade
 from arcade import SpriteList
+from src.views.game_over_view import GameOverView
 
 from src import constants
 from player import Player
@@ -158,15 +159,50 @@ class GameView(arcade.View):
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
 
+        # Check collision of player and enemy
+        enemies_attack = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Enemies"])
+        if enemies_attack:
+            self.player_sprite.lives -= 1
+            if self.player_sprite.lives <= 0:
+                # When player dies
+                game_over_view = GameOverView()
+                self.window.show_view(game_over_view)
+                return
+            else:
+                # When player loses a life
+                self.scene["Enemies"].clear()
+
+                # Respawn at center
+                self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
+                self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
+
+                # Blink player to indicate lost life
+                self.player_sprite.is_blinking = True
+                self.player_sprite.blink_timer = 1.5
+                return
+
+        # Player blinking
+        if self.player_sprite.is_blinking:
+            self.player_sprite.blink_timer -= delta_time
+            if self.player_sprite.blink_timer <= 0:
+                self.player_sprite.is_blinking = False
+                self.player_sprite.alpha = 255  # Ensure visibility after blinking ends
+            else:
+                # Toggle visibility over a time interval
+                if int(self.player_sprite.blink_timer * 5) % 2 == 0:
+                    self.player_sprite.alpha = 0
+                else:
+                    self.player_sprite.alpha = 255
+
         for e in self.scene["Enemies"]:
             e.update_path(self.player_sprite, self.astar_barrier_list, delta_time)
             e.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
             e.update_animation()
 
         for yarn_ball in self.yarn_ball_list:
-            # Check collision
-            enemies_hit = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
-            for enemy in enemies_hit:
+            # Check collision of yarn ball with enemy
+            enemies_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
+            for enemy in enemies_shot:
                 enemy.take_damage()
                 yarn_ball.kill()
 

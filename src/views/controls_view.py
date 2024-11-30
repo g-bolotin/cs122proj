@@ -5,14 +5,11 @@ from src.views.base_view import BaseView
 class ControlsView(BaseView):
     def __init__(self):
         super().__init__()
-        self.back_button_x = 0
-        self.back_button_y = 0
-        self.back_button_width = 200
-        self.back_button_height = 50
-        self.is_hovering_back = False
 
-    def on_show_view(self):
+    def on_show(self):
         arcade.set_background_color((0, 204, 153))
+
+        self.add_button("back", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 200, "Back")
 
     def on_draw(self):
         arcade.start_render()
@@ -26,6 +23,8 @@ class ControlsView(BaseView):
             anchor_x="center",
             font_name=constants.FONT_NAME
         )
+
+        self.draw_buttons()
 
         # Credits
         content = [
@@ -62,18 +61,8 @@ class ControlsView(BaseView):
                 font_name=constants.FONT_NAME
             )
 
-        self.back_button_x = constants.SCREEN_WIDTH / 2
-        self.back_button_y = 100
-        self.draw_button(self.back_button_x, self.back_button_y, "Back", self.is_hovering_back)
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        self.is_hovering_back = (
-                self.back_button_x - self.back_button_width / 2 <= x <= self.back_button_x + self.back_button_width / 2 and
-                self.back_button_y - self.back_button_height / 2 <= y <= self.back_button_y + self.back_button_height / 2
-        )
-
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.is_hovering_back:
+        if self.buttons["back"]["is_hovering"]:
             from src.views.main_menu import MainMenuView
             menu_view = MainMenuView()
             self.window.show_view(menu_view)

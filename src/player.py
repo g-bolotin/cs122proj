@@ -68,6 +68,10 @@ class Player(arcade.Sprite):
         # yarn ball projectiles
         self.yarn_balls = arcade.SpriteList()
 
+        # Blinking
+        self.blink_timer = 0
+        self.is_blinking = False
+
     def update_animation(self, delta_time: float = 1 / 60):
         self.time_counter += delta_time  # time for controlling frame rate
 

@@ -1,7 +1,8 @@
 import arcade
 from src import constants
+from src.views.base_view import BaseView
 
-class CreditsView(arcade.View):
+class CreditsView(BaseView):
     def __init__(self):
         super().__init__()
         self.back_button_x = 0
@@ -62,20 +63,6 @@ class CreditsView(arcade.View):
         self.back_button_y = 100
         self.draw_button(self.back_button_x, self.back_button_y, "Back", self.is_hovering_back)
 
-    def draw_button(self, x, y, text, is_hovering):
-        button_color = (225, 225, 225) if is_hovering else arcade.color.WHITE
-        arcade.draw_rectangle_filled(x, y, self.back_button_width, self.back_button_height, button_color)
-        arcade.draw_text(
-            text,
-            x,
-            y,
-            arcade.color.BLACK,
-            font_size=24,
-            anchor_x="center",
-            anchor_y="center",
-            font_name=constants.FONT_NAME
-        )
-
     def on_mouse_motion(self, x, y, dx, dy):
         self.is_hovering_back = (
                 self.back_button_x - self.back_button_width / 2 <= x <= self.back_button_x + self.back_button_width / 2 and
@@ -84,6 +71,6 @@ class CreditsView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.is_hovering_back:
-            from src.main_menu import MainMenuView
+            from src.views.main_menu import MainMenuView
             menu_view = MainMenuView()
             self.window.show_view(menu_view)

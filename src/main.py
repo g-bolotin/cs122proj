@@ -1,6 +1,6 @@
 import arcade
 from src import constants
-from main_menu import MainMenuView
+from src.views.main_menu import MainMenuView
 
 def main():
     # Create game window with dimensions and title

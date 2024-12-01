@@ -1,6 +1,7 @@
 import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
+import random
 
 from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH, MOVEMENT_SPEED
 

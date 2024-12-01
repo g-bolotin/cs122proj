@@ -1,4 +1,6 @@
 import arcade
+
+from src.powerups.galaxy_yarn import GalaxyYarn
 from src.views.game_over_view import GameOverView
 
 from src import constants
@@ -61,9 +63,11 @@ class GameView(arcade.View):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Create the Sprite lists
+        self.scene.add_sprite_list("Powerups")
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite("Player", self.player_sprite)
         self.scene.add_sprite_list("Enemies")
+
 
         # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
         self.physics_engine = arcade.PhysicsEngineSimple(
@@ -213,8 +217,12 @@ class GameView(arcade.View):
             # boss has spawned
             pass
 
+        # Spawn enemies continuously until boss spawns
         if not self.boss_spawned:
             self.spawn_regular_enemies()
+
+        # Spawn powerups occasionally
+        self.spawn_powerup()
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
@@ -336,6 +344,17 @@ class GameView(arcade.View):
 
         self.player_sprite.change_x = x
         self.player_sprite.change_y = y
+
+    def spawn_powerup(self):
+        if random.random() < 0.005:
+            spawn_x = random.randint(200, SCREEN_WIDTH - 300)
+            spawn_y = random.randint(200, SCREEN_HEIGHT - 300)
+            ball = GalaxyYarn(
+                center_x=spawn_x,
+                center_y=spawn_y,
+                scale=0.5
+            )
+            self.scene["Powerups"].append(ball)
 
     def spawn_regular_enemies(self):
         if random.random() < self.enemy_spawn_rate:

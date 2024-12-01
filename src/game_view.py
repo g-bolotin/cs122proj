@@ -35,12 +35,13 @@ class GameView(arcade.View):
         self.enemy_spawn_rate = 0.01
 
         # Level Timer
-        self.remaining_time = 60.0
+        self.remaining_time = 10.0
         self.timer_text = None
 
         # Boss
         self.boss_spawned = False
         self.boss_defeated = False
+        self.boss_health = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -97,6 +98,16 @@ class GameView(arcade.View):
             font_name=constants.FONT_NAME
         )
 
+        self.boss_health = arcade.Text(
+            text="30/30",
+            start_x=55,
+            start_y=SCREEN_HEIGHT - 130,
+            color=arcade.color.RED,
+            font_size=35,
+            anchor_x="center",
+            font_name=constants.FONT_NAME
+        )
+
         # Initialize camera
         self.camera = arcade.Camera(SCREEN_WIDTH + SIDEBAR_WIDTH, SCREEN_HEIGHT)
 
@@ -148,6 +159,9 @@ class GameView(arcade.View):
         # Draw timer text
         self.timer_text.draw()
 
+        if self.boss_spawned:
+            self.boss_health.draw()
+
     def on_update(self, delta_time):
         self.physics_engine.update()
         self.player_sprite.update()
@@ -159,6 +173,8 @@ class GameView(arcade.View):
         if not self.boss_spawned:
             # Subtract delta_time from remaining_time
             self.remaining_time -= delta_time
+
+            # Once timer runs out, spawn boss
             if self.remaining_time <= 0:
                 self.remaining_time = 0
 
@@ -175,6 +191,7 @@ class GameView(arcade.View):
                 # Change time to indicate Boss level
                 self.timer_text.text = "BOSS"
                 self.timer_text.color = arcade.color.WHITE
+
             else:
                 # Calculate minutes and seconds
                 minutes = int(self.remaining_time) // 60
@@ -283,6 +300,7 @@ class GameView(arcade.View):
             boss_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Boss"])
             for boss in boss_shot:
                 boss.take_damage()
+                self.boss_health.text = f"{boss.health:02d}/{boss.total_health:02d}"
                 yarn_ball.kill()
 
     # WASD movement

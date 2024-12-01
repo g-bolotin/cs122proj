@@ -6,6 +6,9 @@ class MainMenuView(BaseView):
     def __init__(self):
         super().__init__()
 
+        self.cat_head = None
+        self.fish_head = None
+
     def on_show(self):
         # Set background color
         arcade.set_background_color((0, 204, 153))
@@ -14,13 +17,32 @@ class MainMenuView(BaseView):
         self.add_button("controls", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 125, "Controls")
         self.add_button("credits", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 200, "Credits")
 
+        self.cat_head = arcade.Sprite(
+            "../assets/player/cat-head.png",
+            scale = 3
+        )
+        self.cat_head.center_x = constants.SCREEN_WIDTH / 4 - 50
+        self.cat_head.center_y = constants.SCREEN_HEIGHT / 2 + 50
+        self.cat_head.angle =-30
+
+        self.fish_head = arcade.Sprite(
+            "../assets/enemies/fishhead/side-walk/fishhead-68-1.png",
+            scale = 3
+        )
+        self.fish_head.center_x = constants.SCREEN_WIDTH * 3 / 4 + 50
+        self.fish_head.center_y = constants.SCREEN_HEIGHT / 2 + 50
+        self.fish_head.angle = 30
+
     def on_draw(self):
         arcade.start_render()
+
+        self.cat_head.draw()
+        self.fish_head.draw()
 
         arcade.draw_text(
             constants.SCREEN_TITLE,
             constants.SCREEN_WIDTH / 2,
-            constants.SCREEN_HEIGHT / 2 + 150,
+            constants.SCREEN_HEIGHT / 2 + 200,
             arcade.color.GOLD,
             font_size=100,
             anchor_x="center",

@@ -89,8 +89,8 @@ class GameView(arcade.View):
         # Level timer text
         self.timer_text = arcade.Text(
             text="1:00",
-            start_x=45,
-            start_y=SCREEN_HEIGHT - 80,
+            start_x=55,
+            start_y=SCREEN_HEIGHT - 90,
             color=arcade.color.WHITE,
             font_size=35,
             anchor_x="center",
@@ -161,6 +161,7 @@ class GameView(arcade.View):
             self.remaining_time -= delta_time
             if self.remaining_time <= 0:
                 self.remaining_time = 0
+
                 boss_spawn_position = self.get_enemy_spawn_position()
                 boss = BossFish(
                     center_x=boss_spawn_position[0],
@@ -171,22 +172,29 @@ class GameView(arcade.View):
                 self.boss_spawned = True
                 self.enemy_spawn_rate = 0
 
-        # Calculate minutes and seconds
-        minutes = int(self.remaining_time) // 60
-        seconds = int(self.remaining_time) % 60
+                # Change time to indicate Boss level
+                self.timer_text.text = "BOSS"
+                self.timer_text.color = arcade.color.WHITE
+            else:
+                # Calculate minutes and seconds
+                minutes = int(self.remaining_time) // 60
+                seconds = int(self.remaining_time) % 60
 
-        # Update the timer text
-        self.timer_text.text = f"{minutes:01d}:{seconds:02d}"
+                # Update the timer text
+                self.timer_text.text = f"{minutes:01d}:{seconds:02d}"
 
-        # Increase enemy spawn rate halfway through level
-        if self.remaining_time <= 30:
-            self.timer_text.color = arcade.color.GOLD
-            self.enemy_spawn_rate = 0.02
+                # Increase enemy spawn rate halfway through level
+                if self.remaining_time <= 30:
+                    self.timer_text.color = arcade.color.GOLD
+                    self.enemy_spawn_rate = 0.02
 
-        # Change text color to indicate last 10s before level complete
-        if self.remaining_time <= 10:
-            self.timer_text.color = arcade.color.GREEN
-            self.enemy_spawn_rate = 0.03
+                # Change text color to indicate last 10s before level complete
+                if self.remaining_time <= 10:
+                    self.timer_text.color = arcade.color.RED
+                    self.enemy_spawn_rate = 0.03
+        else:
+            # boss has spawned
+            pass
 
         if not self.boss_spawned:
             self.spawn_regular_enemies()
@@ -206,9 +214,6 @@ class GameView(arcade.View):
                     self.window.show_view(game_over_view)
                     return
                 else:
-                    # When player loses a life
-                    self.scene["Enemies"].clear()
-
                     # Respawn at center
                     self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
                     self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2

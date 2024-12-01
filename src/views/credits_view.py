@@ -29,7 +29,7 @@ class CreditsView(BaseView):
         # Credits
         content = [
             {"name": "Galit Bolotin", "role": "Programmer, Game Designer, Artist"},
-            {"name": "Jeremy Chan", "role": "Programmer, Game Designer"}
+            {"name": "Jeremy Chan", "role": "Programmer, Game Designer, \"Artist\""}
         ]
 
         start_y = constants.SCREEN_HEIGHT / 2
@@ -50,7 +50,7 @@ class CreditsView(BaseView):
 
             arcade.draw_text(
                 entry["role"],
-                constants.SCREEN_WIDTH / 2 + 10,
+                constants.SCREEN_WIDTH / 2,
                 y_position,
                 arcade.color.WHITE,
                 font_size=25,

@@ -63,7 +63,7 @@ class GameView(arcade.View):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Create the Sprite lists
-        self.scene.add_sprite_list("Powerups")
+        self.scene.add_sprite_list("Powerups", use_spatial_hash=True)
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite("Player", self.player_sprite)
         self.scene.add_sprite_list("Enemies")
@@ -221,8 +221,17 @@ class GameView(arcade.View):
         if not self.boss_spawned:
             self.spawn_regular_enemies()
 
-        # Spawn powerups occasionally
-        self.spawn_powerup()
+        # Spawn powerups occasionally if there isn't one on screen already
+        if len(self.scene["Powerups"]) < 1:
+            self.spawn_powerup()
+
+        # Player picks up powerup
+        powerup_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene["Powerups"]
+        )
+
+        for powerup in powerup_hit_list:
+            powerup.remove_from_sprite_lists()
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))

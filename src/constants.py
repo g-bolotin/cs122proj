@@ -1,6 +1,6 @@
 SCREEN_WIDTH = 878
 SCREEN_HEIGHT = 768
-SCREEN_TITLE = "TBD Game Name"
+SCREEN_TITLE = "Meow Mayhem"
 FONT_NAME = "Kenney Pixel"
 
 # PLAYER

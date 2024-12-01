@@ -1,5 +1,4 @@
 import arcade
-from arcade import SpriteList
 from src.views.game_over_view import GameOverView
 
 from src import constants
@@ -9,6 +8,7 @@ import random
 
 from src.enemies.enemy import ENEMY_SPEED_IN_PIXELS
 from src.enemies.fishhead import Fishhead
+from src.enemies.boss_fish import BossFish
 from src.views.win_view import WinView
 
 
@@ -37,6 +37,10 @@ class GameView(arcade.View):
         # Level Timer
         self.remaining_time = 60.0
         self.timer_text = None
+
+        # Boss
+        self.boss_spawned = False
+        self.boss_defeated = False
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -96,6 +100,8 @@ class GameView(arcade.View):
         # Initialize camera
         self.camera = arcade.Camera(SCREEN_WIDTH + SIDEBAR_WIDTH, SCREEN_HEIGHT)
 
+        self.scene.add_sprite_list("Boss")
+
     def on_draw(self):
         arcade.start_render()
 
@@ -148,15 +154,22 @@ class GameView(arcade.View):
         self.player_sprite.update_animation()
         self.player_sprite.yarn_balls.update()
 
-        # Subtract delta_time from remaining_time
-        self.remaining_time -= delta_time
-
         # Ensure the timer doesn't go into negatives
-        if self.remaining_time <= 0:
-            self.remaining_time = 0
-            win_view = WinView()
-            self.window.show_view(win_view)
-            return
+        # Check time to spawn boss
+        if not self.boss_spawned:
+            # Subtract delta_time from remaining_time
+            self.remaining_time -= delta_time
+            if self.remaining_time <= 0:
+                self.remaining_time = 0
+                boss_spawn_position = self.get_enemy_spawn_position()
+                boss = BossFish(
+                    center_x=boss_spawn_position[0],
+                    center_y=boss_spawn_position[1],
+                    scale=2
+                )
+                self.scene["Boss"].append(boss)
+                self.boss_spawned = True
+                self.enemy_spawn_rate = 0
 
         # Calculate minutes and seconds
         minutes = int(self.remaining_time) // 60
@@ -175,58 +188,52 @@ class GameView(arcade.View):
             self.timer_text.color = arcade.color.GREEN
             self.enemy_spawn_rate = 0.03
 
-        # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
-        top_coords = {'x': 268, 'y': 0}
-        bottom_coords = {'x': 268, 'y': SCREEN_HEIGHT-1}
-        left_coords = {'x': 0, 'y': 268}  # no idea why this one doesn't require offset by sidebar
-        right_coords = {'x': SCREEN_WIDTH-SIDEBAR_WIDTH, 'y': 268}
-        coords = [top_coords, bottom_coords, left_coords, right_coords]
-
-        # Randomly select enemy spawning time and position
-        if random.random() < self.enemy_spawn_rate:              # Time
-            spawn_pos = random.randint(0, 3)    # Spawn position: top, bottom, left, right
-            tile_num = random.randint(1, 4)     # Tile: one of 4 tiles
-            position = coords[spawn_pos]        # Appropriate coordinates for the selected spawn position
-
-            # Tile multiplier - get next 3 tiles beyond the topmost or leftmost one
-            x_mult = 0
-            y_mult = 0
-            if spawn_pos < 2:
-                x_mult = tile_num
-            else:
-                y_mult = tile_num
-
-            enemy = Fishhead(
-                center_x=position.get('x') + (48 * x_mult),
-                center_y=position.get('y') + (48 * y_mult),
-                scale=0.75
-            )
-            self.scene["Enemies"].append(enemy)
+        if not self.boss_spawned:
+            self.spawn_regular_enemies()
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
 
-        # Check collision of player and enemy
-        enemies_attack = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Enemies"])
-        if enemies_attack:
-            self.player_sprite.lives -= 1
-            if self.player_sprite.lives <= 0:
-                # When player dies
-                game_over_view = GameOverView()
-                self.window.show_view(game_over_view)
-                return
-            else:
-                # When player loses a life
-                self.scene["Enemies"].clear()
+        # only check for collisions if player is not blinking (invincibility frames)
+        if not self.player_sprite.is_blinking:
+            # Check collision of player and enemy
+            enemies_attack = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Enemies"])
+            if enemies_attack:
+                self.player_sprite.lives -= 1
+                if self.player_sprite.lives <= 0:
+                    # When player dies
+                    game_over_view = GameOverView()
+                    self.window.show_view(game_over_view)
+                    return
+                else:
+                    # When player loses a life
+                    self.scene["Enemies"].clear()
 
-                # Respawn at center
-                self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
-                self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
+                    # Respawn at center
+                    self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
+                    self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
 
-                # Blink player to indicate lost life
-                self.player_sprite.is_blinking = True
-                self.player_sprite.blink_timer = 1.5
-                return
+                    # Blink player to indicate lost life
+                    self.player_sprite.is_blinking = True
+                    self.player_sprite.blink_timer = 2
+                    return
+
+            # Check boss collision
+            if self.boss_spawned:
+                for boss in self.scene["Boss"]:
+                    if arcade.check_for_collision(self.player_sprite, boss):
+                        self.player_sprite.lives -= 1
+                        if self.player_sprite.lives <= 0:
+                            game_over_view = GameOverView()
+                            self.window.show_view(game_over_view)
+                            return
+                        else:
+                            # When player loses a life
+                            self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
+                            self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
+                            self.player_sprite.is_blinking = True
+                            self.player_sprite.blink_timer = 2
+                            return
 
         # Player blinking
         if self.player_sprite.is_blinking:
@@ -241,16 +248,36 @@ class GameView(arcade.View):
                 else:
                     self.player_sprite.alpha = 255
 
+        # Update enemies
         for e in self.scene["Enemies"]:
             e.update_path(self.player_sprite, self.astar_barrier_list, delta_time)
             e.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
             e.update_animation()
 
+        # Update Boss
+        if self.boss_spawned:
+            for boss in self.scene["Boss"]:
+                boss.update_path(self.player_sprite, self.astar_barrier_list, delta_time)
+                boss.follow_path(ENEMY_SPEED_IN_PIXELS, delta_time)
+                boss.update_animation(delta_time)
+
+            # When Boss dies
+            if len(self.scene["Boss"]) == 0:
+                self.boss_defeated = True
+                win_view = WinView()
+                self.window.show_view(win_view)
+                return
+
+        # Attack collision with enemies and boss
         for yarn_ball in self.yarn_ball_list:
             # Check collision of yarn ball with enemy
             enemies_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
             for enemy in enemies_shot:
                 enemy.take_damage()
+                yarn_ball.kill()
+            boss_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Boss"])
+            for boss in boss_shot:
+                boss.take_damage()
                 yarn_ball.kill()
 
     # WASD movement
@@ -259,7 +286,7 @@ class GameView(arcade.View):
         self.update_movement()
 
         # shoot yarn ball
-        if key == arcade.key.SPACE:
+        if key == arcade.key.SPACE and not self.player_sprite.is_blinking:
             self.player_sprite.shoot()
 
     def on_key_release(self, key, modifiers):
@@ -286,3 +313,37 @@ class GameView(arcade.View):
 
         self.player_sprite.change_x = x
         self.player_sprite.change_y = y
+
+    def spawn_regular_enemies(self):
+        if random.random() < self.enemy_spawn_rate:
+            spawn_position = self.get_enemy_spawn_position()
+            enemy = Fishhead(
+                center_x=spawn_position[0],
+                center_y=spawn_position[1],
+                scale=0.75
+            )
+            self.scene["Enemies"].append(enemy)
+
+    def get_enemy_spawn_position(self):
+        # Each tile is 48x48 (originally 64x64 but scaled by 0.75)
+        top_coords = {'x': 268, 'y': 0}
+        bottom_coords = {'x': 268, 'y': SCREEN_HEIGHT - 1}
+        left_coords = {'x': 0, 'y': 268}
+        right_coords = {'x': SCREEN_WIDTH - SIDEBAR_WIDTH, 'y': 268}
+        coords = [top_coords, bottom_coords, left_coords, right_coords]
+
+        spawn_pos = random.randint(0, 3)  # Spawn position: top, bottom, left, right
+        tile_num = random.randint(1, 4)  # Tile: one of 4 tiles
+        position = coords[spawn_pos]  # Appropriate coordinates for the selected spawn position
+
+        # Tile multiplier - get next 3 tiles beyond the topmost or leftmost one
+        x_mult = 0
+        y_mult = 0
+        if spawn_pos < 2:
+            x_mult = tile_num
+        else:
+            y_mult = tile_num
+
+        spawn_x = position.get('x') + (48 * x_mult)
+        spawn_y = position.get('y') + (48 * y_mult)
+        return (spawn_x, spawn_y)

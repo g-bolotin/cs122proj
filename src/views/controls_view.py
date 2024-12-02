@@ -32,7 +32,8 @@ class ControlsView(BaseView):
             {"control": "Move Down", "key": "S"},
             {"control": "Move Left", "key": "A"},
             {"control": "Move Right", "key": "D"},
-            {"control": "Shoot", "key": "Space"}
+            {"control": "Shoot", "key": "Space"},
+            {"control": "Use Powerup", "key": "Q"}
         ]
 
         start_y = constants.SCREEN_HEIGHT / 2 + 100

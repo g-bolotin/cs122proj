@@ -97,7 +97,7 @@ class GameView(arcade.View):
         self.cat_head.center_x = 35
         self.cat_head.center_y = SCREEN_HEIGHT - 30
 
-        self.powerup_icon = arcade.Sprite("../assets/powerups/galaxy-ball-64.png")
+        self.powerup_icon = arcade.Sprite(get_resource_path("assets/powerups/galaxy-ball-64.png"))
         self.powerup_icon.scale = 0.55
         self.powerup_icon.center_x = 35
         self.powerup_icon.center_y = constants.SCREEN_HEIGHT - 170
@@ -115,7 +115,7 @@ class GameView(arcade.View):
 
         # Boss Health Text
         self.boss_health = arcade.Text(
-            text="30/30",
+            text="50/50",
             start_x=55,
             start_y=SCREEN_HEIGHT - 130,
             color=arcade.color.RED,
@@ -408,7 +408,7 @@ class GameView(arcade.View):
         self.player_sprite.change_y = y
 
     def spawn_powerup(self):
-        if random.random() < 0.005:
+        if random.random() < 0.003:
             spawn_x = random.randint(200, SCREEN_WIDTH - 300)
             spawn_y = random.randint(200, SCREEN_HEIGHT - 300)
             ball = GalaxyYarn(

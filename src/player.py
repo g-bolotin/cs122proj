@@ -2,7 +2,7 @@ import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
-from src.constants import SIDEBAR_WIDTH, LEVEL_BORDER_SIZE
+from src.utils import get_resource_path
 from src.yarn_ball import YarnBall
 
 
@@ -42,25 +42,25 @@ class Player(arcade.Sprite):
         # Load walk right animation frames
         for i in range(1, 5):
             texture_name = f"cat-right-64-{i}.png"
-            texture = arcade.load_texture("../assets/player/side-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/player/side-walk/" + texture_name))
             self.walk_right_textures.append(texture)
 
         # Load walk left animation frames
         for i in range(1, 5):
             texture_name = f"cat-right-64-{i}.png"
-            texture = arcade.load_texture("../assets/player/side-walk/" + texture_name, flipped_horizontally=True)
+            texture = arcade.load_texture(get_resource_path("assets/player/side-walk/" + texture_name), flipped_horizontally=True)
             self.walk_left_textures.append(texture)
 
         # Load walk down animation frames
         for i in range(1, 5):
             texture_name = f"cat-front-64-{i}.png"
-            texture = arcade.load_texture("../assets/player/front-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/player/front-walk/" + texture_name))
             self.walk_down_textures.append(texture)
 
         # Load walk up animation frames
         for i in range(1, 5):
             texture_name = f"cat-back-64-{i}.png"
-            texture = arcade.load_texture("../assets/player/back-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/player/back-walk/" + texture_name))
             self.walk_up_textures.append(texture)
 
         self.texture = self.walk_down_textures[0]  # set default idle to facing down

@@ -1,5 +1,4 @@
 import arcade
-
 from src import constants
 from src.views.base_view import BaseView
 

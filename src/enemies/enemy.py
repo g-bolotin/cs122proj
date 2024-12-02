@@ -1,8 +1,8 @@
 import arcade
 from src import constants
-from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
+from arcade import FACE_DOWN
 
-from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH, MOVEMENT_SPEED
+from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
 
 ENEMY_SPEED_IN_PIXELS = 48
 class Enemy(arcade.Sprite):

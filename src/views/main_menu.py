@@ -1,6 +1,7 @@
 import arcade
 from src import constants
 from src.views.base_view import BaseView
+from src.utils import get_resource_path
 
 class MainMenuView(BaseView):
     def __init__(self):
@@ -18,7 +19,7 @@ class MainMenuView(BaseView):
         self.add_button("credits", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 200, "Credits")
 
         self.cat_head = arcade.Sprite(
-            "../assets/player/cat-head.png",
+            get_resource_path("assets/player/cat-head.png"),
             scale = 3
         )
         self.cat_head.center_x = constants.SCREEN_WIDTH / 4 - 50
@@ -26,7 +27,7 @@ class MainMenuView(BaseView):
         self.cat_head.angle =-30
 
         self.fish_head = arcade.Sprite(
-            "../assets/enemies/fishhead/side-walk/fishhead-68-1.png",
+            get_resource_path("assets/enemies/fishhead/side-walk/fishhead-68-1.png"),
             scale = 3
         )
         self.fish_head.center_x = constants.SCREEN_WIDTH * 3 / 4 + 50

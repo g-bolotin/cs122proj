@@ -4,6 +4,7 @@ from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
 from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
 from src.enemies.enemy import Enemy, ENEMY_SPEED_IN_PIXELS
+from src.utils import get_resource_path
 
 MIN_DISTANCE = 192  # Distance player must move before enemy path is recalculated
 CLEARED_SPAWN = 100  # Distance needed to move out of spawn area
@@ -39,27 +40,27 @@ class BossFish(Enemy):
         # Load walk left animation frames
         for i in range(1, 9):
             texture_name = f"bossfish-68-{i}.png"
-            texture = arcade.load_texture("../assets/enemies/bossfish/side-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/enemies/bossfish/side-walk/" + texture_name))
             self.walk_left_textures.append(texture)
 
         # Load walk right animation frames (flipped horizontally)
         for i in range(1, 9):
             texture_name = f"bossfish-68-{i}.png"
             texture = arcade.load_texture(
-                "../assets/enemies/bossfish/side-walk/" + texture_name, flipped_horizontally=True
+                get_resource_path("assets/enemies/bossfish/side-walk/" + texture_name), flipped_horizontally=True
             )
             self.walk_right_textures.append(texture)
 
         # Load walk down animation frames
         for i in range(1, 9):
             texture_name = f"bossfish-68-{i}.png"
-            texture = arcade.load_texture("../assets/enemies/bossfish/side-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/enemies/bossfish/side-walk/" + texture_name))
             self.walk_down_textures.append(texture)
 
         # Load walk up animation frames
         for i in range(1, 9):
             texture_name = f"bossfish-68-{i}.png"
-            texture = arcade.load_texture("../assets/enemies/bossfish/side-walk/" + texture_name)
+            texture = arcade.load_texture(get_resource_path("assets/enemies/bossfish/side-walk/" + texture_name))
             self.walk_up_textures.append(texture)
 
         # List of all walk textures for easy access

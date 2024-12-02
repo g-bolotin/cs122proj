@@ -3,15 +3,15 @@ import arcade
 from src.powerups.galaxy_yarn import GalaxyYarn
 from src.views.game_over_view import GameOverView
 
-from src import constants
-from player import Player
-from constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT
+from src.player import Player
+from src.constants import MOVEMENT_SPEED, TILE_SCALING, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, FONT_NAME
 import random
 
 from src.enemies.enemy import ENEMY_SPEED_IN_PIXELS
 from src.enemies.fishhead import Fishhead
 from src.enemies.boss_fish import BossFish
 from src.views.win_view import WinView
+from src.utils import get_resource_path
 
 
 class GameView(arcade.View):
@@ -21,8 +21,8 @@ class GameView(arcade.View):
 
         # Create player sprite at screen center
         self.player_sprite = Player(
-            center_x=constants.SCREEN_WIDTH / 2,
-            center_y=constants.SCREEN_HEIGHT / 2,
+            center_x=SCREEN_WIDTH / 2,
+            center_y=SCREEN_HEIGHT / 2,
             scale=1
         )
 
@@ -53,7 +53,7 @@ class GameView(arcade.View):
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
 
-        dock_tilemap = "../assets/environment/tiled_tilemaps/dock-stage.json"
+        dock_tilemap = get_resource_path("assets/environment/tiled_tilemaps/dock-stage.json")
         layer_options = {
             "Borders": {
                 "use_spatial_hash": True
@@ -92,9 +92,9 @@ class GameView(arcade.View):
 
         )
 
-        self.cat_head = arcade.Sprite("../assets/player/cat-head.png")
+        self.cat_head = arcade.Sprite(get_resource_path("assets/player/cat-head.png"))
         self.cat_head.center_x = 35
-        self.cat_head.center_y = constants.SCREEN_HEIGHT - 30
+        self.cat_head.center_y = SCREEN_HEIGHT - 30
 
         self.powerup_icon = arcade.Sprite("../assets/powerups/galaxy-ball-64.png")
         self.powerup_icon.scale = 0.55
@@ -109,7 +109,7 @@ class GameView(arcade.View):
             color=arcade.color.WHITE,
             font_size=35,
             anchor_x="center",
-            font_name=constants.FONT_NAME
+            font_name=FONT_NAME
         )
 
         # Boss Health Text
@@ -165,7 +165,7 @@ class GameView(arcade.View):
             left=0,
             right=SIDEBAR_WIDTH,
             bottom=0,
-            top=constants.SCREEN_HEIGHT,
+            top=SCREEN_HEIGHT,
             color=arcade.color.BLACK
         )
 
@@ -176,10 +176,10 @@ class GameView(arcade.View):
         arcade.draw_text(
             str(self.player_sprite.lives),
             80,
-            constants.SCREEN_HEIGHT - 40,
+            SCREEN_HEIGHT - 40,
             arcade.color.WHITE,
             35, # font size
-            font_name=constants.FONT_NAME
+            font_name=FONT_NAME
         )
 
         # Draw timer text
@@ -222,7 +222,7 @@ class GameView(arcade.View):
                 )
                 self.scene["Boss"].append(boss)
                 self.boss_spawned = True
-                self.enemy_spawn_rate = 0
+                self.enemy_spawn_rate = 0.01
 
                 # Change time to indicate Boss level
                 self.timer_text.text = "BOSS"
@@ -284,8 +284,8 @@ class GameView(arcade.View):
                     return
                 else:
                     # Respawn at center
-                    self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
-                    self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
+                    self.player_sprite.center_x = SCREEN_WIDTH / 2
+                    self.player_sprite.center_y = SCREEN_HEIGHT / 2
 
                     # Blink player to indicate lost life
                     self.player_sprite.is_blinking = True
@@ -303,8 +303,8 @@ class GameView(arcade.View):
                             return
                         else:
                             # When player loses a life
-                            self.player_sprite.center_x = constants.SCREEN_WIDTH / 2
-                            self.player_sprite.center_y = constants.SCREEN_HEIGHT / 2
+                            self.player_sprite.center_x = SCREEN_WIDTH / 2
+                            self.player_sprite.center_y = SCREEN_HEIGHT / 2
                             self.player_sprite.is_blinking = True
                             self.player_sprite.blink_timer = 2
                             return

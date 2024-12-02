@@ -1,5 +1,6 @@
 import arcade
 
+from src import constants
 from src.powerups.galaxy_yarn import GalaxyYarn
 from src.views.game_over_view import GameOverView
 
@@ -42,7 +43,7 @@ class GameView(arcade.View):
         self.powerup_active = False
 
         # Level Timer
-        self.remaining_time = 15.0
+        self.remaining_time = 60.0
         self.timer_text = None
 
         # Boss

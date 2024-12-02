@@ -27,8 +27,8 @@ class BossFish(Enemy):
         self.height = 68 * 2
 
         # Boss-specific attributes
-        self.health = 30  # Increased health for the boss
-        self.total_health = 30
+        self.health = 50  # Increased health for the boss
+        self.total_health = 50
         self.speed = ENEMY_SPEED_IN_PIXELS / 2  # Boss walks 2 times slower
 
         # Walking textures

@@ -38,9 +38,11 @@ class GameView(arcade.View):
 
         self.powerup_count = None
         self.powerup_icon = None
+        self.powerup_timer = 0.0
+        self.powerup_active = False
 
         # Level Timer
-        self.remaining_time = 60.0
+        self.remaining_time = 15.0
         self.timer_text = None
 
         # Boss
@@ -195,6 +197,13 @@ class GameView(arcade.View):
         self.player_sprite.update_animation()
         self.player_sprite.yarn_balls.update()
 
+        # Powerup timer, disable powerup after 5 seconds
+        if self.powerup_active:
+            self.powerup_timer += delta_time
+            if self.powerup_timer >= 5:
+                self.powerup_active = False
+                self.powerup_timer = 0.0
+
         # Ensure the timer doesn't go into negatives
         # Check time to spawn boss
         if not self.boss_spawned:
@@ -339,10 +348,17 @@ class GameView(arcade.View):
             enemies_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
             for enemy in enemies_shot:
                 enemy.take_damage()
+                # Deal extra damage with powerup
+                if self.powerup_active:
+                    enemy.take_damage()
+                    enemy.take_damage()
                 yarn_ball.kill()
             boss_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Boss"])
             for boss in boss_shot:
                 boss.take_damage()
+                # Deal a little extra damage with powerup
+                if self.powerup_active:
+                    boss.take_damage()
                 self.boss_health.text = f"{boss.health:01d}/{boss.total_health:02d}"
                 yarn_ball.kill()
 
@@ -353,7 +369,17 @@ class GameView(arcade.View):
 
         # shoot yarn ball
         if key == arcade.key.SPACE and not self.player_sprite.is_blinking:
-            self.player_sprite.shoot()
+            if (self.powerup_active):
+                self.player_sprite.shoot_powerup()
+            else:
+                self.player_sprite.shoot()
+
+        # Use powerup
+        if key == arcade.key.Q and (not self.player_sprite.is_blinking) and (len(self.player_sprite.inventory) > 0):
+            # Remove oldest powerup from inventory
+            del self.player_sprite.inventory[0]
+            self.powerup_count.text = len(self.player_sprite.inventory)
+            self.powerup_active = True
 
     def on_key_release(self, key, modifiers):
         self.active_keys.discard(key)

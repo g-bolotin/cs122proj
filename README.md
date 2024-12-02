@@ -34,7 +34,7 @@ python -m venv .venv
 #### Activate the virtual environment
 Windows
 ```bash
-.venv\Scrits\activate
+.venv\Scripts\activate
 ```
 macOS/Linux
 ```bash
@@ -63,7 +63,8 @@ Defeat the fish monsters before losing all your lives!
 
 ## Acknowledgements
 - **Python Arcade Library**: [Python Arcade](api.arcade.academy)
-- **Aseprite**: [Sprite editor & pixel art tool](aseprite.org)
+- **Game Assets**: 
+  - **Aseprite**: [Sprite editor & pixel art tool](aseprite.org)
 - **Contributors**: 
   - Galit Bolotin
   - Jeremy Chan

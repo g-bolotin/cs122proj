@@ -1,4 +1,7 @@
 import arcade
+
+from src import constants
+from src.powerups.galaxy_yarn import GalaxyYarn
 from src.views.game_over_view import GameOverView
 
 from src.player import Player
@@ -34,6 +37,11 @@ class GameView(arcade.View):
         self.yarn_ball_list = self.player_sprite.yarn_balls
         self.enemy_spawn_rate = 0.01
 
+        self.powerup_count = None
+        self.powerup_icon = None
+        self.powerup_timer = 0.0
+        self.powerup_active = False
+
         # Level Timer
         self.remaining_time = 60.0
         self.timer_text = None
@@ -41,6 +49,7 @@ class GameView(arcade.View):
         # Boss
         self.boss_spawned = False
         self.boss_defeated = False
+        self.boss_health = None
 
     def setup(self):
         arcade.set_background_color(arcade.color.BLUE_YONDER)
@@ -60,9 +69,11 @@ class GameView(arcade.View):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Create the Sprite lists
+        self.scene.add_sprite_list("Powerups", use_spatial_hash=True)
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite("Player", self.player_sprite)
         self.scene.add_sprite_list("Enemies")
+
 
         # Add borders and walls from tilemap (to add more walls or edit borders, open the tilesheet in Tiled)
         self.physics_engine = arcade.PhysicsEngineSimple(
@@ -86,6 +97,11 @@ class GameView(arcade.View):
         self.cat_head.center_x = 35
         self.cat_head.center_y = SCREEN_HEIGHT - 30
 
+        self.powerup_icon = arcade.Sprite("../assets/powerups/galaxy-ball-64.png")
+        self.powerup_icon.scale = 0.55
+        self.powerup_icon.center_x = 35
+        self.powerup_icon.center_y = constants.SCREEN_HEIGHT - 170
+
         # Level timer text
         self.timer_text = arcade.Text(
             text="1:00",
@@ -95,6 +111,28 @@ class GameView(arcade.View):
             font_size=35,
             anchor_x="center",
             font_name=FONT_NAME
+        )
+
+        # Boss Health Text
+        self.boss_health = arcade.Text(
+            text="30/30",
+            start_x=55,
+            start_y=SCREEN_HEIGHT - 130,
+            color=arcade.color.RED,
+            font_size=35,
+            anchor_x="center",
+            font_name=constants.FONT_NAME
+        )
+
+        # Powerup Counter
+        self.powerup_count = arcade.Text(
+            text="0",
+            start_x=90,
+            start_y=SCREEN_HEIGHT - 180,
+            color=arcade.color.CYAN,
+            font_size=35,
+            anchor_x="center",
+            font_name=constants.FONT_NAME,
         )
 
         # Initialize camera
@@ -148,17 +186,32 @@ class GameView(arcade.View):
         # Draw timer text
         self.timer_text.draw()
 
+        if self.boss_spawned:
+            self.boss_health.draw()
+
+        self.powerup_icon.draw()
+        self.powerup_count.draw()
+
     def on_update(self, delta_time):
         self.physics_engine.update()
         self.player_sprite.update()
         self.player_sprite.update_animation()
         self.player_sprite.yarn_balls.update()
 
+        # Powerup timer, disable powerup after 5 seconds
+        if self.powerup_active:
+            self.powerup_timer += delta_time
+            if self.powerup_timer >= 5:
+                self.powerup_active = False
+                self.powerup_timer = 0.0
+
         # Ensure the timer doesn't go into negatives
         # Check time to spawn boss
         if not self.boss_spawned:
             # Subtract delta_time from remaining_time
             self.remaining_time -= delta_time
+
+            # Once timer runs out, spawn boss
             if self.remaining_time <= 0:
                 self.remaining_time = 0
 
@@ -175,6 +228,7 @@ class GameView(arcade.View):
                 # Change time to indicate Boss level
                 self.timer_text.text = "BOSS"
                 self.timer_text.color = arcade.color.WHITE
+
             else:
                 # Calculate minutes and seconds
                 minutes = int(self.remaining_time) // 60
@@ -196,8 +250,24 @@ class GameView(arcade.View):
             # boss has spawned
             pass
 
+        # Spawn enemies continuously until boss spawns
         if not self.boss_spawned:
             self.spawn_regular_enemies()
+
+        # Spawn powerups occasionally if there isn't one on screen already
+        if len(self.scene["Powerups"]) < 1:
+            self.spawn_powerup()
+
+        # Player picks up powerup
+        powerup_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene["Powerups"]
+        )
+
+        for powerup in powerup_hit_list:
+            powerup.remove_from_sprite_lists()
+            self.player_sprite.inventory.append(powerup)
+            num_powerups = len(self.player_sprite.inventory)
+            self.powerup_count.text = f"{num_powerups:01d}"
 
         # Keep the camera focused on the game area
         self.camera.move_to((-SIDEBAR_WIDTH, 0))
@@ -279,10 +349,18 @@ class GameView(arcade.View):
             enemies_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Enemies"])
             for enemy in enemies_shot:
                 enemy.take_damage()
+                # Deal extra damage with powerup
+                if self.powerup_active:
+                    enemy.take_damage()
+                    enemy.take_damage()
                 yarn_ball.kill()
             boss_shot = arcade.check_for_collision_with_list(yarn_ball, self.scene["Boss"])
             for boss in boss_shot:
                 boss.take_damage()
+                # Deal a little extra damage with powerup
+                if self.powerup_active:
+                    boss.take_damage()
+                self.boss_health.text = f"{boss.health:01d}/{boss.total_health:02d}"
                 yarn_ball.kill()
 
     # WASD movement
@@ -292,7 +370,17 @@ class GameView(arcade.View):
 
         # shoot yarn ball
         if key == arcade.key.SPACE and not self.player_sprite.is_blinking:
-            self.player_sprite.shoot()
+            if (self.powerup_active):
+                self.player_sprite.shoot_powerup()
+            else:
+                self.player_sprite.shoot()
+
+        # Use powerup
+        if key == arcade.key.Q and (not self.player_sprite.is_blinking) and (len(self.player_sprite.inventory) > 0):
+            # Remove oldest powerup from inventory
+            del self.player_sprite.inventory[0]
+            self.powerup_count.text = len(self.player_sprite.inventory)
+            self.powerup_active = True
 
     def on_key_release(self, key, modifiers):
         self.active_keys.discard(key)
@@ -318,6 +406,17 @@ class GameView(arcade.View):
 
         self.player_sprite.change_x = x
         self.player_sprite.change_y = y
+
+    def spawn_powerup(self):
+        if random.random() < 0.005:
+            spawn_x = random.randint(200, SCREEN_WIDTH - 300)
+            spawn_y = random.randint(200, SCREEN_HEIGHT - 300)
+            ball = GalaxyYarn(
+                center_x=spawn_x,
+                center_y=spawn_y,
+                scale=0.5
+            )
+            self.scene["Powerups"].append(ball)
 
     def spawn_regular_enemies(self):
         if random.random() < self.enemy_spawn_rate:

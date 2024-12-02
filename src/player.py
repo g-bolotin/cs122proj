@@ -2,6 +2,8 @@ import arcade
 from src import constants
 from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
 
+from src.constants import SIDEBAR_WIDTH, LEVEL_BORDER_SIZE
+from src.powerups.galaxy_yarn import GalaxyYarn
 from src.utils import get_resource_path
 from src.yarn_ball import YarnBall
 
@@ -14,6 +16,8 @@ class Player(arcade.Sprite):
         self.time_counter = 0.0  # for controlling animation frame rate
 
         self.lives = constants.INITIAL_HEALTH
+
+        self.inventory = []
 
         # Walking textures
         self.walk_left_textures = []
@@ -48,7 +52,8 @@ class Player(arcade.Sprite):
         # Load walk left animation frames
         for i in range(1, 5):
             texture_name = f"cat-right-64-{i}.png"
-            texture = arcade.load_texture(get_resource_path("assets/player/side-walk/" + texture_name), flipped_horizontally=True)
+            texture = arcade.load_texture(get_resource_path("assets/player/side-walk/" + texture_name),
+                                          flipped_horizontally=True)
             self.walk_left_textures.append(texture)
 
         # Load walk down animation frames
@@ -140,4 +145,15 @@ class Player(arcade.Sprite):
         }
         direction = directions[self.state]
         yarn_ball = YarnBall(direction, (self.center_x, self.center_y))
+        self.yarn_balls.append(yarn_ball)
+
+    def shoot_powerup(self):
+        directions = {
+            1: (1, 0),  # RIGHT
+            2: (-1, 0),  # LEFT
+            3: (0, 1),  # UP
+            4: (0, -1)  # DOWN
+        }
+        direction = directions[self.state]
+        yarn_ball = GalaxyYarn(direction=direction, center_x=self.center_x, center_y=self.center_y)
         self.yarn_balls.append(yarn_ball)

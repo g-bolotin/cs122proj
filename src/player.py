@@ -15,6 +15,8 @@ class Player(arcade.Sprite):
 
         self.lives = constants.INITIAL_HEALTH
 
+        self.inventory = []
+
         # Walking textures
         self.walk_left_textures = []
         self.walk_right_textures = []

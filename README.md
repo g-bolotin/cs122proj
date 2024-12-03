@@ -62,9 +62,9 @@ python -m src.main
 Defeat the fish monsters before losing all your lives!
 
 ## Acknowledgements
-- **Python Arcade Library**: [Python Arcade](api.arcade.academy)
+- **Python Arcade Library**: [Python Arcade](https://api.arcade.academy/)
 - **Game Assets**: 
-  - **Aseprite**: [Sprite editor & pixel art tool](aseprite.org)
+  - **Aseprite**: [Sprite editor & pixel art tool](https://www.aseprite.org/)
 - **Contributors**: 
   - Galit Bolotin
   - Jeremy Chan

@@ -3,7 +3,7 @@
 A 2D top-down shooter game where a cat throws yarn balls at fish enemies.
 
 ## Prerequisites
-- **Python 3.7 or higher** 
+- **Python 3.7 to 3.11** (Arcade does not support Python 3.12+) 
 - **Pip** (python package installer)
 - **Git** (to clone the repository)
 

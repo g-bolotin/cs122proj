@@ -1,5 +1,9 @@
 import arcade
+from arcade import Sound
+from src.music_player import MusicManager
+
 from src import constants
+from src import music_player
 from src.views.base_view import BaseView
 from src.utils import get_resource_path
 
@@ -9,8 +13,13 @@ class MainMenuView(BaseView):
 
         self.cat_head = None
         self.fish_head = None
+        self.music = None
 
     def on_show(self):
+        MusicManager.stop_music()  # note: cannot stop music from previous view, will stop all music
+        self.music = get_resource_path("assets/sfx/menu.wav")
+        MusicManager.play_music(self.music, loop=True)
+
         # Set background color
         arcade.set_background_color((0, 204, 153))
 

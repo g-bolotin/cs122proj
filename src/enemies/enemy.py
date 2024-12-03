@@ -1,14 +1,16 @@
 import arcade
 from src import constants
-from arcade import FACE_DOWN
+from arcade import FACE_DOWN, Sound
 
 from src.constants import LEVEL_BORDER_SIZE, SIDEBAR_WIDTH
+from src.utils import get_resource_path
 
 ENEMY_SPEED_IN_PIXELS = 48
 class Enemy(arcade.Sprite):
     def __init__(self, center_x=0, center_y=0, scale=1):
         super().__init__(scale=scale, center_x=center_x, center_y=center_y)
 
+        self.sfx_player = None
         self.state = FACE_DOWN   # player directionality
         self.time_counter = 0.0  # for controlling animation frame rate
 
@@ -62,6 +64,10 @@ class Enemy(arcade.Sprite):
             print(self.path)
 
     def take_damage(self):
+        hit_sfx = Sound(get_resource_path("assets/sfx/hit.wav"))
+        self.sfx_player = arcade.play_sound(hit_sfx)
         self.health -= 1
         if self.health <= 0:
+            death_sfx = Sound(get_resource_path("assets/sfx/fish-death.wav"))
+            self.sfx_player = arcade.play_sound(death_sfx)
             self.kill()

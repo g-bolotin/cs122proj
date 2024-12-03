@@ -1,6 +1,6 @@
 import arcade
 from src import constants
-from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN
+from arcade import FACE_RIGHT, FACE_LEFT, FACE_UP, FACE_DOWN, Sound
 
 from src.constants import SIDEBAR_WIDTH, LEVEL_BORDER_SIZE
 from src.powerups.galaxy_yarn import GalaxyYarn

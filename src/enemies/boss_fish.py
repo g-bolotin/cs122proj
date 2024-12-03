@@ -200,8 +200,3 @@ class BossFish(Enemy):
                 self.change_y = (diff_y / distance) * adjusted_speed
                 self.center_x += self.change_x * delta_time
                 self.center_y += self.change_y * delta_time
-
-    def take_damage(self):
-        self.health -= 1
-        if self.health <= 0:
-            self.kill()

@@ -50,7 +50,7 @@ class GameView(arcade.View):
         self.powerup_active = False
 
         # Level Timer
-        self.remaining_time = 10.0
+        self.remaining_time = 60.0
         self.timer_text = None
 
         # Boss

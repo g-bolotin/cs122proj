@@ -1,13 +1,20 @@
 import arcade
 
 from src import constants
+from src.music_player import MusicManager
+from src.utils import get_resource_path
 from src.views.base_view import BaseView
 
 class GameOverView(BaseView):
     def __init__(self):
         super().__init__()
+        self.music = None
 
     def on_show(self):
+        MusicManager.stop_music()  # note: cannot stop music from previous view, will stop all music
+        self.music = get_resource_path("assets/sfx/game-over.wav")
+        MusicManager.play_music(self.music, loop=False)
+
         arcade.set_background_color(arcade.color.BLACK)
 
         self.add_button("restart", constants.SCREEN_WIDTH / 2, constants.SCREEN_HEIGHT / 2 - 50, "Restart")

@@ -1,6 +1,7 @@
 import arcade
 
-from src import constants
+from src import constants, music_player
+from src.music_player import MusicManager
 from src.powerups.galaxy_yarn import GalaxyYarn
 from src.views.game_over_view import GameOverView
 
@@ -13,11 +14,13 @@ from src.enemies.fishhead import Fishhead
 from src.enemies.boss_fish import BossFish
 from src.views.win_view import WinView
 from src.utils import get_resource_path
+from arcade import Sound
 
 
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
+        self.sfx_player = None
         self.active_keys = set()
 
         # Create player sprite at screen center
@@ -32,18 +35,22 @@ class GameView(arcade.View):
         self.cat_head = None
         self.tile_map = None
         self.camera = None
+        self.music = None
+
+        # Enemies
         self.astar_barrier_list = None
         self.enemy_path_list = []
         self.yarn_ball_list = self.player_sprite.yarn_balls
         self.enemy_spawn_rate = 0.01
 
+        # Powerup tracking
         self.powerup_count = None
         self.powerup_icon = None
         self.powerup_timer = 0.0
         self.powerup_active = False
 
         # Level Timer
-        self.remaining_time = 60.0
+        self.remaining_time = 10.0
         self.timer_text = None
 
         # Boss
@@ -52,6 +59,10 @@ class GameView(arcade.View):
         self.boss_health = None
 
     def setup(self):
+        MusicManager.stop_music() # note: cannot stop music from previous view, will stop all music
+        self.music = get_resource_path("assets/sfx/in-game.wav")
+        MusicManager.play_music(self.music, loop=True)
+
         arcade.set_background_color(arcade.color.BLUE_YONDER)
 
         dock_tilemap = get_resource_path("assets/environment/tiled_tilemaps/dock-stage.json")
@@ -265,6 +276,8 @@ class GameView(arcade.View):
 
         for powerup in powerup_hit_list:
             powerup.remove_from_sprite_lists()
+            pickup_sfx = Sound(get_resource_path("assets/sfx/pickup.wav"))
+            self.sfx_player = arcade.play_sound(pickup_sfx)
             self.player_sprite.inventory.append(powerup)
             num_powerups = len(self.player_sprite.inventory)
             self.powerup_count.text = f"{num_powerups:01d}"
@@ -377,6 +390,8 @@ class GameView(arcade.View):
 
         # Use powerup
         if key == arcade.key.Q and (not self.player_sprite.is_blinking) and (len(self.player_sprite.inventory) > 0):
+            use_sfx = Sound(get_resource_path("assets/sfx/powerup.wav"))
+            self.sfx_player = arcade.play_sound(use_sfx)
             # Remove oldest powerup from inventory
             del self.player_sprite.inventory[0]
             self.powerup_count.text = len(self.player_sprite.inventory)
